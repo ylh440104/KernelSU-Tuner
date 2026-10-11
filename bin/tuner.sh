@@ -446,6 +446,73 @@ apply_net() {
   wr /proc/sys/net/ipv4/tcp_syncookies 1
 }
 
+apply_lmk() {
+  [ "$(cfg_get LMK_TUNE)" = "1" ] || return 0
+  prof=$1
+  mem=$(awk '/MemTotal/ {print $2}' /proc/meminfo 2>/dev/null)
+  case "$mem" in ''|*[!0-9]*) mem=0 ;; esac
+  if [ "$mem" -gt 0 ]; then
+    mb=$((mem / 1024))
+    if [ "$mb" -lt 3000 ]; then
+      k=8192
+    elif [ "$mb" -lt 5000 ]; then
+      k=16384
+    elif [ "$mb" -lt 8000 ]; then
+      k=32768
+    else
+      k=65536
+    fi
+    case "$prof" in
+      powersave) k=$((k / 2)) ;;
+      gaming) k=$((k * 2)) ;;
+      performance) k=$((k * 3 / 2)) ;;
+    esac
+    [ "$k" -lt 4096 ] && k=4096
+    wr /proc/sys/vm/min_free_kbytes "$k"
+  fi
+  if [ -f /sys/module/lowmemorykiller/parameters/minfree ]; then
+    case "$prof" in
+      powersave) wr /sys/module/lowmemorykiller/parameters/minfree "2048,3072,4096,6144,8192,10240" ;;
+      gaming) wr /sys/module/lowmemorykiller/parameters/minfree "10240,15360,20480,25600,30720,40960" ;;
+      performance) wr /sys/module/lowmemorykiller/parameters/minfree "8192,12288,16384,20480,24576,32768" ;;
+      *) wr /sys/module/lowmemorykiller/parameters/minfree "4096,6144,8192,12288,16384,24576" ;;
+    esac
+  fi
+  if [ -f /sys/module/lowmemorykiller/parameters/enable_lmk ]; then
+    wr /sys/module/lowmemorykiller/parameters/enable_lmk 1
+  fi
+  for l in /sys/module/lowmemorykiller/parameters/lmk_count /sys/module/lowmemorykiller/parameters/kill_timeout; do
+    [ -f "$l" ] || continue
+  done
+  wr /proc/sys/vm/watermark_scale_factor 150
+  wr /proc/sys/vm/watermark_boost_factor 15000
+  return 0
+}
+
+apply_zram_size() {
+  [ "$(cfg_get ZRAM_SIZE)" = "1" ] || return 0
+  prof=$1
+  z=/sys/block/zram0
+  [ -d "$z" ] || return 0
+  cur=$(cat "$z/disksize" 2>/dev/null)
+  case "$cur" in ''|*[!0-9]*) return 0 ;; esac
+  [ "$cur" -gt 0 ] && return 0
+  mem=$(awk '/MemTotal/ {print $2}' /proc/meminfo 2>/dev/null)
+  case "$mem" in ''|*[!0-9]*) return 0 ;; esac
+  kb=$(awk -v m="$mem" 'BEGIN {printf "%d", m * 0.75}' 2>/dev/null)
+  case "$kb" in ''|*[!0-9]*) return 0 ;; esac
+  bytes=$((kb * 1024))
+  [ "$bytes" -lt 268435456 ] && bytes=268435456
+  [ "$bytes" -gt 8589934592 ] && bytes=8589934592
+  swapon -s 2>/dev/null | grep -q "$z" && swapoff "$z" 2>/dev/null
+  if wr "$z/disksize" "$bytes"; then
+    if mkswap "$z" >/dev/null 2>&1; then
+      swapon "$z" >/dev/null 2>&1
+    fi
+  fi
+  return 0
+}
+
 apply_zram() {
   [ "$(cfg_get ZRAM_TUNE)" = "1" ] || return 0
   swaps=$(cat /proc/swaps 2>/dev/null)
@@ -464,19 +531,61 @@ apply_zram() {
   done
 }
 
+zone_type() {
+  z=$1
+  t=$(cat "$z/type" 2>/dev/null | tr 'A-Z' 'a-z')
+  printf '%s' "$t"
+}
+
+zone_allowed() {
+  t=$1
+  sel=$(cfg_get THERMAL_ZONES)
+  [ -n "$sel" ] || sel="cpu,gpu"
+  [ "$sel" = "all" ] && return 0
+  oldifs=$IFS
+  IFS=,
+  for w in $sel; do
+    IFS=$oldifs
+    [ -n "$w" ] || continue
+    case "$t" in
+      *"$w"*) return 0 ;;
+    esac
+    IFS=,
+  done
+  IFS=$oldifs
+  return 1
+}
+
 apply_thermal() {
   if [ "$(cfg_get THERMAL_OPEN)" = "1" ]; then
     wr /sys/module/msm_thermal/parameters/enabled N
     wr /sys/module/msm_thermal/core_control/enabled N
     wr /sys/module/msm_thermal/vdd_restriction/enabled N
-    for t in /sys/class/thermal/thermal_zone*/mode; do
-      wr "$t" disabled
+    for z in /sys/class/thermal/thermal_zone*; do
+      [ -f "$z/mode" ] || continue
+      if zone_allowed "$(zone_type "$z")"; then
+        wr "$z/mode" disabled
+      fi
     done
   else
-    for t in /sys/class/thermal/thermal_zone*/mode; do
-      wr "$t" enabled
+    for z in /sys/class/thermal/thermal_zone*; do
+      [ -f "$z/mode" ] || continue
+      wr "$z/mode" enabled
     done
   fi
+}
+
+list_thermal() {
+  for z in /sys/class/thermal/thermal_zone*; do
+    [ -f "$z/type" ] || continue
+    t=$(zone_type "$z")
+    m=$(cat "$z/mode" 2>/dev/null)
+    tp=$(cat "$z/temp" 2>/dev/null)
+    sel=0
+    zone_allowed "$t" && sel=1
+    printf '%s|%s|%s|%s|%s
+' "${z##*/}" "$t" "$m" "$tp" "$sel"
+  done
 }
 
 apply_printk() {
@@ -550,7 +659,9 @@ do_apply() {
   apply_vm "$prof"
   apply_net
   apply_dns "$prof"
+  apply_lmk "$prof"
   apply_zram
+  apply_zram_size "$prof"
   apply_thermal
   apply_printk
   apply_selinux
@@ -826,6 +937,7 @@ apply_fast() {
   apply_cpu "$prof"
   apply_gpu "$prof"
   apply_vm "$prof"
+  apply_lmk "$prof"
   apply_thermal
   release_lock
   if [ "$(cfg_get DISP_TUNE)" = "1" ] && [ -x "$MODDIR/bin/display.sh" ]; then
@@ -883,6 +995,9 @@ case "$cmd" in
   reset)
     : > "$BAK"
     do_apply "$1"
+    ;;
+  zones)
+    list_thermal
     ;;
   *)
     printf 'usage: tuner.sh {apply [profile]|fast [profile]|monitor|revert|status|set K V|get K|list|trim|log|clear-log|reset [profile]}\n'

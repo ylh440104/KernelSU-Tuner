@@ -74,6 +74,14 @@ read_screen() {
   esac
 }
 
+read_lowpower() {
+  v=$(settings get global low_power 2>/dev/null | tr -d ' \n\r')
+  case "$v" in
+    1) printf '1' ;;
+    *) printf '0' ;;
+  esac
+}
+
 read_charging() {
   for p in "$SYS"/sys/class/power_supply/*/status; do
     [ -f "$p" ] || continue
@@ -83,6 +91,31 @@ read_charging() {
     esac
   done
   printf '0'
+}
+
+in_window() {
+  win=$(get AUTO_WINDOW)
+  [ -n "$win" ] || return 1
+  case "$win" in
+    *-*) ;;
+    *) return 1 ;;
+  esac
+  st=${win%-*}
+  en=${win#*-}
+  now=$(date '+%H%M' 2>/dev/null)
+  case "$now" in ''|*[!0-9]*) return 1 ;; esac
+  st=$(printf '%s' "$st" | tr -d ':')
+  en=$(printf '%s' "$en" | tr -d ':')
+  st=$(printf '%04d' "${st:-0}" 2>/dev/null)
+  en=$(printf '%04d' "${en:-0}" 2>/dev/null)
+  case "$st" in *[!0-9]*) return 1 ;; esac
+  case "$en" in *[!0-9]*) return 1 ;; esac
+  if [ "$st" -le "$en" ]; then
+    [ "$now" -ge "$st" ] && [ "$now" -lt "$en" ] && return 0
+  else
+    if [ "$now" -ge "$st" ] || [ "$now" -lt "$en" ]; then return 0; fi
+  fi
+  return 1
 }
 
 decide() {
@@ -106,6 +139,20 @@ decide() {
   sc=$(read_screen)
   ch=$(read_charging)
   tc=$((t / 1000))
+  lp=$(read_lowpower)
+  d_lp=$(get AUTO_LOWPOWER)
+  [ -n "$d_lp" ] || d_lp=0
+  d_wprof=$(get AUTO_WINDOW_PROFILE)
+  d_won=$(get AUTO_WINDOW_ON)
+  [ -n "$d_won" ] || d_won=0
+  if [ "$d_won" = "1" ] && [ -n "$d_wprof" ] && in_window; then
+    printf '%s|%s|%s|%s\n' "$d_wprof" "$tc" "定时" "0"
+    return 0
+  fi
+  if [ "$lp" = "1" ] && [ "$d_lp" = "1" ]; then
+    printf '%s|%s|%s|%s\n' "powersave" "$tc" "省电模式" "0"
+    return 0
+  fi
 
   if [ "$t" -ge "$d_hot" ]; then
     printf '%s|%s|%s|%s\n' "$d_cool" "$tc" "过热" "1"

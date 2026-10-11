@@ -153,6 +153,8 @@ cursor:pointer;white-space:nowrap;border:1px solid transparent
     <h2>调优开关</h2>
     <div class="row"><div><div class="t">CPU 调度器</div><div class="d">按预设切换 scaling_governor</div></div><div class="sw"><input type="checkbox" data-k="CPU_GOV"><i></i></div></div>
     <div class="row"><div><div class="t">GPU 调频</div><div class="d">Adreno/Mali 频率档位与调速器</div></div><div class="sw"><input type="checkbox" data-k="GPU_TUNE"><i></i></div></div>
+    <div class="row"><div><div class="t">CPU 频率上下限</div><div class="d">按预设限制 scaling_max_freq / scaling_min_freq</div></div><div class="sw"><input type="checkbox" data-k="CPU_FREQ"><i></i></div></div>
+    <div class="row"><div><div class="t">CPU 频率上下限</div><div class="d">按预设限制 scaling_max_freq / scaling_min_freq</div></div><div class="sw"><input type="checkbox" data-k="CPU_FREQ"><i></i></div></div>
     <div class="row"><div><div class="t">全核在线</div><div class="d">唤醒被离线的小核，避免卡顿掉帧</div></div><div class="sw"><input type="checkbox" data-k="CPU_PIN"><i></i></div></div>
     <div class="row"><div><div class="t">IO 调度器</div><div class="d">按预设切换块设备调度算法</div></div><div class="sw"><input type="checkbox" data-k="IO_SCHED"><i></i></div></div>
     <div class="row"><div><div class="t">预读与队列</div><div class="d">调整 read_ahead_kb 与 nr_requests</div></div><div class="sw"><input type="checkbox" data-k="READ_AHEAD"><i></i></div></div>
@@ -160,7 +162,13 @@ cursor:pointer;white-space:nowrap;border:1px solid transparent
     <div class="row"><div><div class="t">网络加速</div><div class="d">启用 BBR、增大收发缓冲、TCP Fast Open</div></div><div class="sw"><input type="checkbox" data-k="NET_TUNE"><i></i></div></div>
     <div class="row"><div><div class="t">DNS 优化</div><div class="d">按预设切换 DNS，性能档启用加密 DNS</div></div><div class="sw"><input type="checkbox" data-k="DNS_TUNE"><i></i></div></div>
     <div class="row"><div><div class="t">ZRAM 压缩算法</div><div class="d">优先切换 zstd / lz4，提升压缩比与速度</div></div><div class="sw"><input type="checkbox" data-k="ZRAM_TUNE"><i></i></div></div>
+    <div class="row"><div><div class="t">LMK 内存回收</div><div class="d">按内存容量分档设置 minfree 与水位</div></div><div class="sw"><input type="checkbox" data-k="LMK_TUNE"><i></i></div></div>
+    <div class="row"><div><div class="t">ZRAM 大小</div><div class="d">未启用 swap 时按内存 75% 建立，需重启生效</div></div><div class="sw"><input type="checkbox" data-k="ZRAM_SIZE"><i></i></div></div>
+    <div class="row"><div><div class="t">LMK 内存回收</div><div class="d">按内存容量分档设置 minfree 与水位</div></div><div class="sw"><input type="checkbox" data-k="LMK_TUNE"><i></i></div></div>
+    <div class="row"><div><div class="t">ZRAM 大小</div><div class="d">未启用 swap 时按内存 75% 建立，需重启生效</div></div><div class="sw"><input type="checkbox" data-k="ZRAM_SIZE"><i></i></div></div>
     <div class="row"><div><div class="t">温控解锁</div><div class="d">关闭 thermal_zone 与 msm_thermal，更稳但更热</div></div><div class="sw"><input type="checkbox" data-k="THERMAL_OPEN"><i></i></div></div>
+    <div class="row" id="zoneRow" style="display:none"><div><div class="t">解锁范围</div><div class="d">选择要关闭的温控区，未选的保持启用</div></div><div class="pill b" id="zoneBtn">cpu,gpu</div></div>
+    <div class="row" id="zoneRow" style="display:none"><div><div class="t">解锁范围</div><div class="d">选择要关闭的温控区，未选的保持启用</div></div><div class="pill b" id="zoneBtn">cpu,gpu</div></div>
     <div class="row"><div><div class="t">SELinux 宽容模式</div><div class="d">降低安全强度，仅供调试，勿长期开启</div></div><div class="sw"><input type="checkbox" data-k="SELINUX_PERM"><i></i></div></div>
     <div class="row"><div><div class="t">关闭 IPv6</div><div class="d">部分网络环境下可减少解析延迟</div></div><div class="sw"><input type="checkbox" data-k="IPV6_OFF"><i></i></div></div>
     <div class="row"><div><div class="t">动画加速</div><div class="d">过渡动画缩放设为 0.5x，观感更跟手</div></div><div class="sw"><input type="checkbox" data-k="ANIM_FAST"><i></i></div></div>
@@ -201,6 +209,23 @@ cursor:pointer;white-space:nowrap;border:1px solid transparent
     </div>
     <div class="field"><label>充电时提升性能<div class="hint">边充边玩自动上性能档</div></label>
       <div class="sw"><input type="checkbox" id="apCharge"><i></i></div>
+    </div>
+    <div class="field"><label>省电模式联动<div class="hint">系统开启省电模式时自动切省电档</div></label>
+      <div class="sw"><input type="checkbox" id="apLowPower"><i></i></div>
+    </div>
+    <div class="field"><label>定时切换<div class="hint">在指定时间段内使用固定预设，跨天区间也支持</div></label>
+      <div class="sw"><input type="checkbox" id="apWinOn"><i></i></div>
+    </div>
+    <div class="field"><label>时间段<div class="hint">格式 HHMM-HHMM，如 2300-0700</div></label>
+      <input type="text" id="apWin" placeholder="2300-0700">
+    </div>
+    <div class="field"><label>时间段预设</label>
+      <select id="apWinProf">
+        <option value="powersave">省电</option>
+        <option value="balanced">均衡</option>
+        <option value="performance">性能</option>
+        <option value="gaming">游戏</option>
+      </select>
     </div>
     <div class="btns" style="margin-top:12px">
       <button class="btn p" id="apSave">保存并应用</button>
@@ -525,6 +550,14 @@ async function load() {
   document.getElementById("apHotV").textContent = document.getElementById("apHot").value + " °C";
   document.getElementById("apScreen").checked = pick(m, "CFG_AUTO_SCREEN", "1") === "1";
   document.getElementById("apCharge").checked = pick(m, "CFG_AUTO_CHARGE", "0") === "1";
+  document.getElementById("apLowPower").checked = pick(m, "CFG_AUTO_LOWPOWER", "1") === "1";
+  document.getElementById("apWinOn").checked = pick(m, "CFG_AUTO_WINDOW_ON", "0") === "1";
+  document.getElementById("apWin").value = pick(m, "CFG_AUTO_WINDOW", "2300-0700");
+  document.getElementById("apWinProf").value = pick(m, "CFG_AUTO_WINDOW_PROFILE", "powersave");
+  const zr = document.getElementById("zoneRow");
+  if (zr) zr.style.display = pick(m, "CFG_THERMAL_OPEN", "0") === "1" ? "flex" : "none";
+  const zb = document.getElementById("zoneBtn");
+  if (zb) zb.textContent = pick(m, "CFG_THERMAL_ZONES", "cpu,gpu");
   document.getElementById("apBadge").className = "badge" + (pick(m, "LIVE_AUTOPILOT", "0") === "1" ? " on" : "");
 
   document.getElementById("bgOn").checked = pick(m, "CFG_BATT_GUARD", "0") === "1";
@@ -627,6 +660,10 @@ document.querySelectorAll(".prof").forEach(function (p) {
 document.querySelectorAll(".sw input[data-k]").forEach(function (inp) {
   inp.addEventListener("change", async function () {
     await saveKey(inp.dataset.k, inp.checked ? "1" : "0");
+    if (inp.dataset.k === "THERMAL_OPEN") {
+      const zr = document.getElementById("zoneRow");
+      if (zr) zr.style.display = inp.checked ? "flex" : "none";
+    }
     toast(inp.checked ? "已开启" : "已关闭");
   });
 });
@@ -670,6 +707,15 @@ document.getElementById("apSave").addEventListener("click", async function () {
   await saveKey("AUTO_TEMP_LOW", String((num(document.getElementById("apHot").value, 45) - 5) * 1000));
   await saveKey("AUTO_SCREEN", document.getElementById("apScreen").checked ? "1" : "0");
   await saveKey("AUTO_CHARGE", document.getElementById("apCharge").checked ? "1" : "0");
+  await saveKey("AUTO_LOWPOWER", document.getElementById("apLowPower").checked ? "1" : "0");
+  await saveKey("AUTO_WINDOW_ON", document.getElementById("apWinOn").checked ? "1" : "0");
+  const wv = document.getElementById("apWin").value.trim();
+  if (wv && !/^[0-9]{3,4}-[0-9]{3,4}$/.test(wv)) {
+    toast("时间段格式应为 HHMM-HHMM");
+    return;
+  }
+  await saveKey("AUTO_WINDOW", wv || "2300-0700");
+  await saveKey("AUTO_WINDOW_PROFILE", document.getElementById("apWinProf").value);
   const on = document.getElementById("apOn").checked;
   await saveKey("AUTOPILOT", on ? "1" : "0");
   await sh("sh " + AP + (on ? " start" : " stop"));
@@ -1134,6 +1180,24 @@ document.querySelectorAll(".tab").forEach(function (t) {
     }
   });
 });
+
+const ZONE_OPTS = ["cpu", "gpu", "battery", "vbat", "quiet-therm", "pa-therm", "all"];
+
+function zoneMenu() {
+  const cur = (document.getElementById("zoneBtn").textContent || "cpu,gpu").split(",").filter(Boolean);
+  const picked = ZONE_OPTS.filter(function (z) { return cur.indexOf(z) >= 0; });
+  const lines = ZONE_OPTS.map(function (z) {
+    return (picked.indexOf(z) >= 0 ? "[x] " : "[ ] ") + z;
+  }).join("\n");
+  const ans = prompt("选择要解锁的温控区（用逗号分隔名称，all 表示全部）：\n\n" + lines + "\n\n当前: " + (cur.join(",") || "cpu,gpu"), cur.join(",") || "cpu,gpu");
+  if (ans === null) return;
+  const val = ans.split(",").map(function (x) { return x.trim(); }).filter(Boolean).join(",") || "cpu,gpu";
+  document.getElementById("zoneBtn").textContent = val;
+  saveKey("THERMAL_ZONES", val).then(function () { toast("已保存，重新应用后生效"); });
+}
+
+const zb = document.getElementById("zoneBtn");
+if (zb) zb.addEventListener("click", zoneMenu);
 
 try { ksu.enableEdgeToEdge(true); } catch (e) {}
 load();

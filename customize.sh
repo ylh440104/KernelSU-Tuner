@@ -13,11 +13,15 @@ if [ ! -f /data/adb/ksu_tuner/config.conf ]; then
   printf 'PROFILE=balanced\n' > /data/adb/ksu_tuner/config.conf
   printf 'CPU_GOV=1\n' >> /data/adb/ksu_tuner/config.conf
   printf 'CPU_PIN=0\n' >> /data/adb/ksu_tuner/config.conf
+  printf 'CPU_FREQ=1\n' >> /data/adb/ksu_tuner/config.conf
   printf 'IO_SCHED=1\n' >> /data/adb/ksu_tuner/config.conf
   printf 'READ_AHEAD=1\n' >> /data/adb/ksu_tuner/config.conf
   printf 'VM_TUNE=1\n' >> /data/adb/ksu_tuner/config.conf
   printf 'NET_TUNE=1\n' >> /data/adb/ksu_tuner/config.conf
   printf 'ZRAM_TUNE=1\n' >> /data/adb/ksu_tuner/config.conf
+  printf 'LMK_TUNE=1\n' >> /data/adb/ksu_tuner/config.conf
+  printf 'ZRAM_SIZE=0\n' >> /data/adb/ksu_tuner/config.conf
+  printf 'THERMAL_ZONES=cpu,gpu\n' >> /data/adb/ksu_tuner/config.conf
   printf 'PRINTK_OFF=0\n' >> /data/adb/ksu_tuner/config.conf
   printf 'THERMAL_OPEN=0\n' >> /data/adb/ksu_tuner/config.conf
   printf 'SELINUX_PERM=0\n' >> /data/adb/ksu_tuner/config.conf
@@ -34,6 +38,10 @@ if [ ! -f /data/adb/ksu_tuner/config.conf ]; then
   printf 'AUTO_TEMP_LOW=40000\n' >> /data/adb/ksu_tuner/config.conf
   printf 'AUTO_SCREEN=1\n' >> /data/adb/ksu_tuner/config.conf
   printf 'AUTO_CHARGE=0\n' >> /data/adb/ksu_tuner/config.conf
+  printf 'AUTO_LOWPOWER=1\n' >> /data/adb/ksu_tuner/config.conf
+  printf 'AUTO_WINDOW_ON=0\n' >> /data/adb/ksu_tuner/config.conf
+  printf 'AUTO_WINDOW=2300-0700\n' >> /data/adb/ksu_tuner/config.conf
+  printf 'AUTO_WINDOW_PROFILE=powersave\n' >> /data/adb/ksu_tuner/config.conf
   printf 'BATT_GUARD=0\n' >> /data/adb/ksu_tuner/config.conf
   printf 'CHARGE_LIMIT=80\n' >> /data/adb/ksu_tuner/config.conf
   printf 'DISP_TUNE=0\n' >> /data/adb/ksu_tuner/config.conf
@@ -66,6 +74,7 @@ set_perm "$MODPATH/bin/appwatch.sh" 0 0 0755
 set_perm "$MODPATH/bin/custom.sh" 0 0 0755
 set_perm "$MODPATH/bin/display.sh" 0 0 0755
 set_perm "$MODPATH/bin/wipeshield.sh" 0 0 0755
+set_perm "$MODPATH/bin/backup.sh" 0 0 0755
 set_perm "$MODPATH/bin/init-apply.sh" 0 0 0755
 set_perm "$MODPATH/service.sh" 0 0 0755
 set_perm "$MODPATH/boot-completed.sh" 0 0 0755

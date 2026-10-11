@@ -1,7 +1,7 @@
 id=KernelSU-Tuner
 name=KernelSU Tuner
-version=v3.1.0
-versionCode=30010
+version=v3.2.0
+versionCode=30020
 author=Operit
-description=内核调优全家桶：四档预设、CPU 频率上下限、GPU/IO/VM/网络/DNS/显示调优、智能驾驶、电池守护、应用待机管理、per-app 策略、自定义参数、防砖自动回滚、防格机三模式防护，全部可逆
+description=内核调优全家桶：四档预设、CPU 频率上下限、GPU/IO/VM/LMK/ZRAM/网络/DNS/显示调优、温控分区解锁、智能驾驶(含省电联动与定时切换)、电池守护、应用待机管理、per-app 策略、自定义参数(带范围校验)、配置导入导出、防砖回滚、防格机三模式，全部可逆
 updateJson=https://modules.kernelsu.org/api/v1/modules/KernelSU-Tuner/update.json

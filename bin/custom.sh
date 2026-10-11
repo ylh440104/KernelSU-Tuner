@@ -13,6 +13,15 @@ clean() {
   printf '%s' "$1" | tr -d '\n\r'
 }
 
+is_num() {
+  case "$1" in
+    ''|*[!0-9-]*) return 1 ;;
+    -) return 1 ;;
+    --*|-*-*) return 1 ;;
+  esac
+  return 0
+}
+
 valid_path() {
   case "$1" in
     /sys/*|/proc/*) ;;
@@ -31,10 +40,59 @@ has_path() {
   awk -F'|' -v p="$1" '$1==p {f=1} END {exit !f}' "$CUSTOM" 2>/dev/null
 }
 
+read1() {
+  head -n 1 "$1" 2>/dev/null | tr -d '\n\r'
+}
+
+limit_of() {
+  p=$1
+  k=$2
+  d=${p%/*}
+  b=${p##*/}
+  for c in "$d/$k" "$d/${b}_$k"; do
+    [ -f "$c" ] || continue
+    v=$(read1 "$c")
+    is_num "$v" && { printf '%s' "$v"; return 0; }
+  done
+  case "$b" in
+    scaling_max_freq|scaling_min_freq|cpuinfo_max_freq|cpuinfo_min_freq)
+      for c in "$d/cpuinfo_${k}_freq" "$d/scaling_${k}_freq"; do
+        [ -f "$c" ] || continue
+        v=$(read1 "$c")
+        is_num "$v" && { printf '%s' "$v"; return 0; }
+      done
+      ;;
+  esac
+  return 1
+}
+
+range_check() {
+  p=$1
+  v=$2
+  is_num "$v" || return 0
+  lo=$(limit_of "$p" min)
+  hi=$(limit_of "$p" max)
+  [ -n "$lo" ] || [ -n "$hi" ] || return 0
+  if [ -n "$lo" ] && [ "$v" -lt "$lo" ]; then
+    printf 'ERR 低于下限 %s' "$lo"
+    return 1
+  fi
+  if [ -n "$hi" ] && [ "$v" -gt "$hi" ]; then
+    printf 'ERR 高于上限 %s' "$hi"
+    return 1
+  fi
+  if [ -n "$lo" ] && [ -n "$hi" ]; then
+    printf 'OK 范围内 %s-%s' "$lo" "$hi"
+  else
+    printf 'OK 范围 %s' "${lo:-?}-${hi:-?}"
+  fi
+  return 0
+}
+
 bk_save() {
   [ -f "$1" ] || return 0
   grep -qF "$1|" "$BAK" 2>/dev/null && return 0
-  v=$(head -n 1 "$1" 2>/dev/null)
+  v=$(read1 "$1")
   [ -n "$v" ] || return 0
   printf '%s|%s\n' "$1" "$v" >> "$BAK"
 }
@@ -50,22 +108,45 @@ wr() {
 do_list() {
   while IFS='|' read -r p v l; do
     [ -n "$p" ] || continue
-    cur=$(head -n 1 "$SYS$p" 2>/dev/null)
+    cur=$(read1 "$SYS$p")
     exists=0
     [ -f "$SYS$p" ] && exists=1
-    printf '%s|%s|%s|%s|%s\n' "$p" "$v" "$l" "$cur" "$exists"
+    lo=$(limit_of "$SYS$p" min)
+    hi=$(limit_of "$SYS$p" max)
+    printf '%s|%s|%s|%s|%s|%s|%s\n' "$p" "$v" "$l" "$cur" "$exists" "$lo" "$hi"
   done < "$CUSTOM"
+}
+
+do_check() {
+  p=$(clean "$1")
+  v=$(clean "$2")
+  valid_path "$p" || { printf 'ERR 路径无效\n'; exit 1; }
+  [ -f "$SYS$p" ] || { printf 'ERR 节点不存在\n'; exit 1; }
+  out=$(range_check "$SYS$p" "$v")
+  printf '%s\n' "$out"
+  case "$out" in ERR*) exit 1 ;; esac
 }
 
 do_add() {
   p=$(clean "$1")
   v=$(clean "$2")
   l=$(clean "$3")
+  force=$(clean "$4")
   valid_path "$p" || { printf 'ERR 路径无效\n'; exit 1; }
   has_path "$p" && { printf 'ERR 已存在\n'; exit 1; }
   [ -n "$l" ] || l="$p"
+  note=""
+  if [ ! -f "$SYS$p" ]; then
+    note=" 节点当前不存在，已记录待应用"
+  elif [ "$force" != "force" ]; then
+    out=$(range_check "$SYS$p" "$v")
+    case "$out" in
+      ERR*) printf '%s（加 force 可忽略）\n' "$out"; exit 1 ;;
+      *) note=" $out" ;;
+    esac
+  fi
   printf '%s|%s|%s\n' "$p" "$v" "$l" >> "$CUSTOM"
-  printf 'OK\n'
+  printf 'OK%s\n' "$note"
 }
 
 do_del() {
@@ -79,33 +160,47 @@ do_del() {
 do_set() {
   p=$(clean "$1")
   v=$(clean "$2")
+  force=$(clean "$3")
   valid_path "$p" || { printf 'ERR 路径无效\n'; exit 1; }
   has_path "$p" || { printf 'ERR 不存在\n'; exit 1; }
+  note=""
+  if [ -f "$SYS$p" ] && [ "$force" != "force" ]; then
+    out=$(range_check "$SYS$p" "$v")
+    case "$out" in
+      ERR*) printf '%s（加 force 可忽略）\n' "$out"; exit 1 ;;
+      *) note=" $out" ;;
+    esac
+  fi
   awk -F'|' -v p="$p" -v v="$v" 'BEGIN{OFS="|"} {if ($1==p) $2=v; print}' "$CUSTOM" > "$CUSTOM.t" 2>/dev/null
   mv -f "$CUSTOM.t" "$CUSTOM" 2>/dev/null
-  printf 'OK\n'
+  printf 'OK%s\n' "$note"
 }
 
 do_read() {
   p=$(clean "$1")
   valid_path "$p" || exit 1
-  head -n 1 "$SYS$p" 2>/dev/null
+  read1 "$SYS$p"
   printf '\n'
 }
 
 do_apply() {
   n=0
   f=0
+  s=0
   while IFS='|' read -r p v l; do
     [ -n "$p" ] || continue
     valid_path "$p" || continue
+    if [ ! -f "$SYS$p" ]; then
+      s=$((s + 1))
+      continue
+    fi
     if wr "$SYS$p" "$v"; then
       n=$((n + 1))
     else
       f=$((f + 1))
     fi
   done < "$CUSTOM"
-  printf '已应用 %s 项，失败 %s 项\n' "$n" "$f"
+  printf '已应用 %s 项，失败 %s 项，跳过 %s 项\n' "$n" "$f" "$s"
 }
 
 do_revert() {
@@ -132,14 +227,17 @@ case "$1" in
   list)
     do_list
     ;;
+  check)
+    do_check "$2" "$3"
+    ;;
   add)
-    do_add "$2" "$3" "$4"
+    do_add "$2" "$3" "$4" "$5"
     ;;
   del)
     do_del "$2"
     ;;
   set)
-    do_set "$2" "$3"
+    do_set "$2" "$3" "$4"
     ;;
   read)
     do_read "$2"
@@ -151,6 +249,6 @@ case "$1" in
     do_revert
     ;;
   *)
-    printf 'usage: custom.sh {list|add <path> <value> [label]|del <path>|set <path> <value>|read <path>|apply|revert}\n'
+    printf 'usage: custom.sh {list|check <path> <value>|add <path> <value> [label] [force]|del <path>|set <path> <value> [force]|read <path>|apply|revert}\n'
     ;;
 esac
