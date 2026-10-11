@@ -8,7 +8,7 @@ LOGF=$CFG_DIR/appwatch.log
 SYS=${KSU_SYS:-}
 
 MODDIR=$(cd "${0%/*}" 2>/dev/null && cd .. && pwd)
-[ -n "$MODDIR" ] || MODDIR=/data/adb/modules/ksu_tuner
+[ -n "$MODDIR" ] || MODDIR=/data/adb/modules/KernelSU-Tuner
 TUNER=$MODDIR/bin/tuner.sh
 
 mkdir -p "$CFG_DIR" 2>/dev/null

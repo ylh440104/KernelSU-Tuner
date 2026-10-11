@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/KernelSU-Modules/tools/main/schemas/module.schema.json
 schemaVersion: 1
-id: ksu_tuner
+id: KernelSU-Tuner
 name: KernelSU Tuner
 summary: Kernel-level tuning for rooted Android. Performance profiles that switch themselves based on temperature, screen state and charging, plus charge limiting, per-app policies and a WebUI console.
 description: README.md

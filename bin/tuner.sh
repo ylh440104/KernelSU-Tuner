@@ -1,7 +1,7 @@
 #!/system/bin/sh
 
 MODDIR=$(cd "${0%/*}" 2>/dev/null && cd .. && pwd)
-[ -n "$MODDIR" ] || MODDIR=/data/adb/modules/ksu_tuner
+[ -n "$MODDIR" ] || MODDIR=/data/adb/modules/KernelSU-Tuner
 
 CFG_DIR=/data/adb/ksu_tuner
 CFG=$CFG_DIR/config.conf
@@ -573,7 +573,7 @@ do_status() {
   fi
   printf 'LIVE_RULECOUNT=%s\n' "$(wc -l "$CFG_DIR/apprules.conf" 2>/dev/null | awk '{print $1}')"
   printf 'LIVE_CUSTOMCOUNT=%s\n' "$(wc -l "$CFG_DIR/custom.conf" 2>/dev/null | awk '{print $1}')"
-  if [ -f "$MODDIR/initrc/ksu_tuner.rc" ]; then
+  if [ -f "$MODDIR/initrc/KernelSU-Tuner.rc" ]; then
     printf 'LIVE_INITRC=1\n'
   else
     printf 'LIVE_INITRC=0\n'

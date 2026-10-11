@@ -340,9 +340,9 @@ cursor:pointer;white-space:nowrap;border:1px solid transparent
   <div class="card">
     <h2>initrc 常驻服务</h2>
     <div class="muted">
-      已注入 <code>initrc/ksu_tuner.rc</code>，由 init 在 late_start 阶段拉起，比 service.sh 更早生效。<br>
-      · <b>ksu_tuner_boot</b>：开机极早期应用预设<br>
-      · <b>ksu_tuner_watch</b>：boot_completed 后启动应用追踪<br>
+      已注入 <code>initrc/KernelSU-Tuner.rc</code>，由 init 在 late_start 阶段拉起，比 service.sh 更早生效。<br>
+      · <b>KernelSU-Tuner_boot</b>：开机极早期应用预设<br>
+      · <b>KernelSU-Tuner_watch</b>：boot_completed 后启动应用追踪<br>
       修改配置后可执行 <code>ksud initrc refresh</code> 手动刷新（下次开机生效）。
     </div>
     <div class="stats" style="margin-top:10px">
@@ -378,7 +378,7 @@ cursor:pointer;white-space:nowrap;border:1px solid transparent
 <div id="toast"></div>
 
 <script>
-const MOD = "/data/adb/modules/ksu_tuner";
+const MOD = "/data/adb/modules/KernelSU-Tuner";
 const TUNER = MOD + "/bin/tuner.sh";
 const AP = MOD + "/bin/autopilot.sh";
 const BG = MOD + "/bin/guard.sh";

@@ -1,7 +1,7 @@
 #!/system/bin/sh
 
 MODDIR=$(cd "${0%/*}" 2>/dev/null && cd .. && pwd)
-[ -n "$MODDIR" ] || MODDIR=/data/adb/modules/ksu_tuner
+[ -n "$MODDIR" ] || MODDIR=/data/adb/modules/KernelSU-Tuner
 
 CFG_DIR=/data/adb/ksu_tuner
 CFG=$CFG_DIR/config.conf

@@ -112,10 +112,10 @@ dumpsys activity top          (ACTIVITY 行)
 用 KernelSU 的 initrc 注入，让 init 进程在 `late_start` 阶段直接拉起，比 `service.sh` 更早。
 
 ```rc
-service ksu_tuner_boot   /system/bin/sh .../bin/init-apply.sh
-service ksu_tuner_watch  /system/bin/sh .../bin/appwatch.sh run
+service KernelSU-Tuner_boot   /system/bin/sh .../bin/init-apply.sh
+service KernelSU-Tuner_watch  /system/bin/sh .../bin/appwatch.sh run
 on property:sys.boot_completed=1
-    start ksu_tuner_watch
+    start KernelSU-Tuner_watch
 ```
 
 改完配置想立刻生效的话，跑一下 `ksud initrc refresh`，下次开机用新的。
@@ -139,13 +139,13 @@ WebUI 在模块列表里点进去就行，动作按钮会按 `省电切档 → �
 
 ```sh
 # 主控
-sh /data/adb/modules/ksu_tuner/bin/tuner.sh status      # 看当前所有状态
-sh /data/adb/modules/ksu_tuner/bin/tuner.sh apply gaming
-sh /data/adb/modules/ksu_tuner/bin/tuner.sh fast gaming  # 只切 CPU/GPU/VM，快一些
-sh /data/adb/modules/ksu_tuner/bin/tuner.sh monitor      # 连采 3 次实时数据
-sh /data/adb/modules/ksu_tuner/bin/tuner.sh revert       # 回滚所有内核参数
-sh /data/adb/modules/ksu_tuner/bin/tuner.sh set CPU_GOV 0
-sh /data/adb/modules/ksu_tuner/bin/tuner.sh trim
+sh /data/adb/modules/KernelSU-Tuner/bin/tuner.sh status      # 看当前所有状态
+sh /data/adb/modules/KernelSU-Tuner/bin/tuner.sh apply gaming
+sh /data/adb/modules/KernelSU-Tuner/bin/tuner.sh fast gaming  # 只切 CPU/GPU/VM，快一些
+sh /data/adb/modules/KernelSU-Tuner/bin/tuner.sh monitor      # 连采 3 次实时数据
+sh /data/adb/modules/KernelSU-Tuner/bin/tuner.sh revert       # 回滚所有内核参数
+sh /data/adb/modules/KernelSU-Tuner/bin/tuner.sh set CPU_GOV 0
+sh /data/adb/modules/KernelSU-Tuner/bin/tuner.sh trim
 
 # 智能驾驶
 sh .../bin/autopilot.sh start | stop | status
@@ -213,7 +213,7 @@ LIVE_GPUFREQ=490
 ## 目录结构
 
 ```
-/data/adb/modules/ksu_tuner/
+/data/adb/modules/KernelSU-Tuner/
 ├── module.prop
 ├── customize.sh           安装时初始化配置、设权限
 ├── post-fs-data.sh        建目录、校验配置、识别 late-load
@@ -222,7 +222,7 @@ LIVE_GPUFREQ=490
 ├── action.sh              动作按钮
 ├── uninstall.sh           卸载时完整还原
 ├── initrc/
-│   └── ksu_tuner.rc       init 常驻服务
+│   └── KernelSU-Tuner.rc  init 常驻服务
 ├── bin/
 │   ├── tuner.sh           主控，预设应用与状态查询
 │   ├── autopilot.sh       温度/息屏/充电自适应
@@ -236,7 +236,7 @@ LIVE_GPUFREQ=490
     └── index.html         WebUI（单文件，无外部依赖）
 ```
 
-运行时数据在 `/data/adb/ksu_tuner/`：`config.conf` 配置、`backup.conf` 原始值备份、`tuner.log` 日志、各守护进程的 `.pid` 和 `.log`。
+运行时数据在 `/data/adb/ksu_tuner/`（与模块 id 解耦，升级不丢配置）：`config.conf` 配置、`backup.conf` 原始值备份、`tuner.log` 日志、各守护进程的 `.pid` 和 `.log`。
 
 ---
 
