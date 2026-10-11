@@ -175,6 +175,30 @@ sh .../bin/custom.sh revert
 # 显示
 sh .../bin/display.sh status
 sh .../bin/display.sh apply gaming
+
+# 内核扩展调优
+sh .../bin/kernel.sh all gaming     # 一次跑完下面全部
+sh .../bin/kernel.sh devfreq        # 总线与内存控制器调频
+sh .../bin/kernel.sh devfreq-list   # 看设备有哪些 devfreq 节点
+sh .../bin/kernel.sh ksm            # 内存去重
+sh .../bin/kernel.sh thp            # 透明大页
+sh .../bin/kernel.sh schedtune      # 调度增强
+sh .../bin/kernel.sh tcp            # TCP 三层缓冲
+sh .../bin/kernel.sh boost          # 触控 boost
+sh .../bin/kernel.sh fs             # 文件系统上限
+sh .../bin/kernel.sh status         # 各开关状态
+
+# 自定义预设
+sh .../bin/presets.sh list
+sh .../bin/presets.sh save night powersave
+sh .../bin/presets.sh apply night
+
+# 守护看门狗
+sh .../bin/watchdog.sh start | stop | status | log
+
+# 配置读写与迁移
+sh .../bin/cfg.sh version
+sh .../bin/cfg.sh migrate
 ```
 
 `status` 的输出是 `KEY=VALUE` 格式，好解析：
@@ -233,7 +257,14 @@ LIVE_GPUFREQ=490
 │   ├── appwatch.sh        前台应用追踪
 │   ├── custom.sh          自定义参数
 │   ├── display.sh         刷新率与触控
+│   ├── kernel.sh          devfreq/KSM/THP/schedtune/TCP/boost/fs
+│   ├── presets.sh         自定义预设
+│   ├── backup.sh          配置导出导入
+│   ├── wipeshield.sh      防格机
+│   ├── watchdog.sh        守护进程看门狗
+│   ├── cfg.sh             配置原子读写与版本迁移
 │   └── init-apply.sh      initrc 调用的入口
+├── sepolicy.rule          SELinux 规则
 └── webroot/
     └── index.html         WebUI（单文件，无外部依赖）
 ```

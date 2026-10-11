@@ -62,6 +62,33 @@ wr() {
   return 0
 }
 
+trim_due() {
+  iv=$(cfg_get TRIM_INTERVAL)
+  [ -n "$iv" ] || iv=0
+  case "$iv" in ''|*[!0-9]*) iv=0 ;; esac
+  [ "$iv" -gt 0 ] || return 1
+  last=$(cfg_get LAST_TRIM)
+  case "$last" in ''|*[!0-9]*) last=0 ;; esac
+  now=$(date +%s 2>/dev/null)
+  case "$now" in ''|*[!0-9]*) return 1 ;; esac
+  [ "$last" -gt "$now" ] && { cfg_set LAST_TRIM "$now"; return 1; }
+  [ "$((now - last))" -ge "$((iv * 86400))" ] || return 1
+  return 0
+}
+
+do_trim_auto() {
+  trim_due || return 0
+  do_trim >/dev/null 2>&1
+  now=$(date +%s 2>/dev/null)
+  case "$now" in ''|*[!0-9]*) ;; *) cfg_set LAST_TRIM "$now" ;; esac
+  log "trim auto"
+}
+
+kernel_hook() {
+  [ -x "$MODDIR/bin/kernel.sh" ] || return 0
+  sh "$MODDIR/bin/kernel.sh" all "$1" >/dev/null 2>&1
+}
+
 do_dry() {
   prof=$1
   [ -n "$prof" ] || prof=$(cfg_get PROFILE)
@@ -88,6 +115,10 @@ do_dry() {
   apply_ipv6
   DRY_RUN=0
   printf '\n共 %s 处变更，未做任何写入。\n' "$DRY_N"
+  printf '\n另: devfreq/KSM/THP/schedtune/TCP/boost/fs 由 kernel.sh 处理\n'
+  if [ -x "$MODDIR/bin/kernel.sh" ]; then
+    sh "$MODDIR/bin/kernel.sh" status 2>/dev/null
+  fi
   if [ -s "$CFG_DIR/custom.conf" ]; then
     printf '另有自定义参数 %s 项，执行 apply 时会一并写入。\n' "$(wc -l < "$CFG_DIR/custom.conf" | tr -d ' ')"
   fi
@@ -708,6 +739,8 @@ do_apply() {
   if [ "$(cfg_get DISP_TUNE)" = "1" ] && [ -x "$MODDIR/bin/display.sh" ]; then
     sh "$MODDIR/bin/display.sh" apply "$prof" >/dev/null 2>&1
   fi
+  kernel_hook "$1"
+  do_trim_auto
   if [ -s "$CFG_DIR/custom.conf" ] && [ -x "$MODDIR/bin/custom.sh" ]; then
     sh "$MODDIR/bin/custom.sh" apply >/dev/null 2>&1
   fi
@@ -1047,7 +1080,7 @@ case "$cmd" in
     do_dry "$1"
     ;;
   *)
-    printf 'usage: tuner.sh {apply [profile]|fast [profile]|monitor|revert|status|set K V|get K|list|trim|log|clear-log|reset [profile]}\n'
+    printf 'usage: tuner.sh {apply [profile]|fast [profile]|dry [profile]|monitor|revert|status|set K V|get K|list|trim|log|clear-log|reset [profile]|zones}\n'
     ;;
 esac
 

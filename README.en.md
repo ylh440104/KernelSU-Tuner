@@ -145,6 +145,13 @@ bin/display.sh   status|refresh|touch|apply|nodes
 bin/wipeshield.sh start|stop|status|mode|answer|signal|test|log
 bin/backup.sh    export|import|list|path
 bin/presets.sh   list|save|del|apply
+bin/kernel.sh    devfreq|devfreq-list|ksm|thp|schedtune|tcp|boost|fs|all|status
+bin/watchdog.sh  start|stop|status|log
+bin/cfg.sh       read|write|migrate|version|boot-inc|boot-ok|boot-count
+bin/presets.sh   list|save|del|apply
+bin/kernel.sh    devfreq|devfreq-list|ksm|thp|schedtune|tcp|boost|fs|all|status
+bin/watchdog.sh  start|stop|status|log
+bin/cfg.sh       read|write|migrate|version|boot-inc|boot-ok|boot-count
 ```
 
 ---

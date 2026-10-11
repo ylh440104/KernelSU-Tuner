@@ -76,6 +76,9 @@ set_perm "$MODPATH/bin/display.sh" 0 0 0755
 set_perm "$MODPATH/bin/wipeshield.sh" 0 0 0755
 set_perm "$MODPATH/bin/backup.sh" 0 0 0755
 set_perm "$MODPATH/bin/presets.sh" 0 0 0755
+set_perm "$MODPATH/bin/kernel.sh" 0 0 0755
+set_perm "$MODPATH/bin/watchdog.sh" 0 0 0755
+set_perm "$MODPATH/bin/cfg.sh" 0 0 0755
 set_perm "$MODPATH/bin/init-apply.sh" 0 0 0755
 set_perm "$MODPATH/service.sh" 0 0 0755
 set_perm "$MODPATH/boot-completed.sh" 0 0 0755

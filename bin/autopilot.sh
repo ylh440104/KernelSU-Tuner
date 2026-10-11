@@ -74,6 +74,13 @@ read_screen() {
   esac
 }
 
+read_batt() {
+  b=$(cat "$SYS/sys/class/power_supply/battery/capacity" 2>/dev/null)
+  case "$b" in ''|*[!0-9]*) b=$(cat "$SYS/sys/class/power_supply/Battery/capacity" 2>/dev/null) ;; esac
+  case "$b" in ''|*[!0-9]*) b=100 ;; esac
+  printf '%s' "$b"
+}
+
 read_lowpower() {
   v=$(settings get global low_power 2>/dev/null | tr -d ' \n\r')
   case "$v" in
@@ -152,6 +159,17 @@ decide() {
   if [ "$lp" = "1" ] && [ "$d_lp" = "1" ]; then
     printf '%s|%s|%s|%s\n' "powersave" "$tc" "省电模式" "0"
     return 0
+  fi
+  d_bp=$(get BATT_PROFILE)
+  d_bl=$(get BATT_LOW)
+  [ -n "$d_bl" ] || d_bl=20
+  case "$d_bl" in ''|*[!0-9]*) d_bl=20 ;; esac
+  if [ "$d_bp" = "1" ]; then
+    bc=$(read_batt)
+    if [ "$bc" -le "$d_bl" ] && [ "$ch" != "1" ]; then
+      printf '%s|%s|%s|%s\n' "powersave" "$tc" "低电量$bc%" "0"
+      return 0
+    fi
   fi
 
   if [ "$t" -ge "$d_hot" ]; then

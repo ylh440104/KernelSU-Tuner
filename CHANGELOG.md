@@ -2,6 +2,25 @@
 
 版本号与 `module.prop` 中的 `version` 一致，括号内为 `versionCode`。
 
+## v3.4.0 (30040)
+
+内核扩展调优、配置版本化、SELinux 规则、看门狗。
+
+- 新增 `bin/kernel.sh`，覆盖之前没碰过的几块：
+  - devfreq 总线与内存控制器调频，四档各配一套 governor
+  - KSM 内存去重、THP 透明大页、`vm.page-cluster`
+  - schedtune 的 boost、prefer_idle 和 uclamp.min
+  - TCP 三层缓冲 `tcp_rmem` / `tcp_wmem`、`netdev_max_backlog`、`netdev_budget`
+  - 触控 boost（cpu_boost、msm_performance、cpu_input_boost）
+  - 文件系统上限 inotify / file-max / nr_open / protected_*
+- 新增 `bin/watchdog.sh`：周期性检查四个守护进程，掉线自动拉起。
+- 新增 `bin/cfg.sh`：配置读写统一走原子替换，并带 SCHEMA 版本号与自动迁移。
+- 新增 `sepolicy.rule`：为 init 补齐写入 sysfs / procfs / devfreq / cgroup 等节点所需的 SELinux 规则。
+- 新增定时 TRIM（`TRIM_INTERVAL`，单位天）与低电量自动切省电（`BATT_PROFILE` / `BATT_LOW`）。
+- 修复：安全模式触发时用追加方式写 `SAFEGUARD=0`，会在配置里产生重复键。
+- 修复：`bootfail` 计数器清空后留下空文件，改为统一写 `0`。
+- WebUI 工具页增加内核扩展开关组、看门狗控制和 devfreq 查看。
+
 ## v3.2.0 (30020)
 
 配置备份、CPU 频率上下限、LMK 与 ZRAM 调优。

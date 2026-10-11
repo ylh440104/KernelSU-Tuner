@@ -6,7 +6,7 @@ CFG=$CFG_DIR/config.conf
 
 [ -f "$CFG" ] || exit 0
 
-: > "$CFG_DIR/bootfail"
+printf '%s\n' "0" > "$CFG_DIR/bootfail"
 chmod 600 "$CFG_DIR/bootfail" 2>/dev/null
 
 if [ -f "$MODDIR/disable" ]; then
@@ -19,8 +19,17 @@ get() {
 }
 
 setkv() {
-  sed -i "/^$1=/d" "$CFG" 2>/dev/null
-  printf '%s=%s\n' "$1" "$2" >> "$CFG"
+  tmp="$CFG_DIR/.cfg.$$"
+  awk -v k="$1" -v v="$2" '
+    BEGIN { done = 0 }
+    $0 ~ "^" k "=" { if (!done) { print k "=" v; done = 1 } ; next }
+    { print }
+    END { if (!done) print k "=" v }
+  ' "$CFG" > "$tmp" 2>/dev/null || return 1
+  [ -s "$tmp" ] || { rm -f "$tmp" 2>/dev/null; return 1; }
+  chmod 600 "$tmp" 2>/dev/null
+  mv -f "$tmp" "$CFG" 2>/dev/null || rm -f "$tmp" 2>/dev/null
+  return 0
 }
 
 if [ "$(get ANIM_FAST)" = "1" ]; then

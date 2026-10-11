@@ -42,6 +42,9 @@ if [ -s "$CFG_DIR/custom.conf" ]; then
   sh "$MODDIR/bin/custom.sh" apply >/dev/null 2>&1
 fi
 
+if [ "$(get WATCHDOG)" = "1" ]; then
+  sh "$MODDIR/bin/watchdog.sh" start >/dev/null 2>&1
+fi
 if [ "$(get LOG_CAPTURE)" = "1" ]; then
   mkdir -p "$CFG_DIR/logs" 2>/dev/null
   (

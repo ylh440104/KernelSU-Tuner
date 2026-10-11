@@ -6,7 +6,7 @@ BAK=$CFG_DIR/backup.conf
 
 MODDIR=${0%/*}
 
-for d in autopilot guard appwatch shield; do
+for d in autopilot guard appwatch shield watchdog; do
   if [ -f "$CFG_DIR/$d.pid" ]; then
     p=$(cat "$CFG_DIR/$d.pid" 2>/dev/null)
     [ -n "$p" ] && kill "$p" 2>/dev/null
@@ -14,6 +14,9 @@ for d in autopilot guard appwatch shield; do
   fi
 done
 
+if [ -x "$MODDIR/bin/kernel.sh" ]; then
+  sh "$MODDIR/bin/kernel.sh" devfreq powersave >/dev/null 2>&1
+fi
 if [ -x "$MODDIR/bin/appctl.sh" ]; then
   sh "$MODDIR/bin/appctl.sh" restore >/dev/null 2>&1
 fi

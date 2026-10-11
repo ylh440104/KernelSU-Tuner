@@ -475,6 +475,60 @@ cursor:pointer;white-space:nowrap;border:1px solid transparent
   </div>
 
   <div class="card">
+    <h2>内核扩展调优</h2>
+    <div class="muted" style="margin-bottom:12px">
+      devfreq 总线频率、KSM 内存去重、THP 大页、schedtune 调度增强、TCP 缓冲、触控 boost、文件系统上限。全部默认关闭。
+    </div>
+    <div id="kxList"></div>
+    <div class="btns">
+      <button class="btn" id="kxStatus">刷新</button>
+      <button class="btn" id="kxDev">查看 devfreq</button>
+    </div>
+    <pre id="kxOut" style="margin-top:10px">—</pre>
+  </div>
+
+  <div class="card">
+    <h2>守护进程</h2>
+    <div class="muted" style="margin-bottom:12px">
+      看门狗会周期性检查 AutoPilot、电池守护、应用监控和防格机是否还活着，掉线就重新拉起。
+    </div>
+    <div class="btns">
+      <button class="btn p" id="wdStart">启动</button>
+      <button class="btn r" id="wdStop">停止</button>
+      <button class="btn" id="wdStatus">状态</button>
+      <button class="btn" id="wdLog">日志</button>
+    </div>
+    <pre id="wdOut" style="margin-top:10px">—</pre>
+  </div>
+
+  <div class="card">
+    <h2>内核扩展调优</h2>
+    <div class="muted" style="margin-bottom:12px">
+      devfreq 总线频率、KSM 内存去重、THP 大页、schedtune 调度增强、TCP 缓冲、触控 boost、文件系统上限。全部默认关闭。
+    </div>
+    <div id="kxList"></div>
+    <div class="btns">
+      <button class="btn" id="kxStatus">刷新</button>
+      <button class="btn" id="kxDev">查看 devfreq</button>
+    </div>
+    <pre id="kxOut" style="margin-top:10px">—</pre>
+  </div>
+
+  <div class="card">
+    <h2>守护进程</h2>
+    <div class="muted" style="margin-bottom:12px">
+      看门狗会周期性检查 AutoPilot、电池守护、应用监控和防格机是否还活着，掉线就重新拉起。
+    </div>
+    <div class="btns">
+      <button class="btn p" id="wdStart">启动</button>
+      <button class="btn r" id="wdStop">停止</button>
+      <button class="btn" id="wdStatus">状态</button>
+      <button class="btn" id="wdLog">日志</button>
+    </div>
+    <pre id="wdOut" style="margin-top:10px">—</pre>
+  </div>
+
+  <div class="card">
     <h2>变更预览</h2>
     <div class="muted" style="margin-bottom:12px">
       列出应用当前预设会改动哪些节点，不写入任何内容。
@@ -1242,6 +1296,8 @@ document.querySelectorAll(".tab").forEach(function (t) {
       if (pr) pr.click();
       const ar = document.getElementById("acList");
       if (ar) ar.click();
+      kxRender();
+      kxRender();
     }
     if (t.dataset.t === "guard") {
       gsLoadLog();
@@ -1351,6 +1407,138 @@ document.getElementById("drRun").addEventListener("click", async function () {
   put("drOut", "计算中…");
   const r = await sh("sh " + TU + " dry");
   put("drOut", r.stdout + r.stderr);
+});
+
+const KN = MOD + "/bin/kernel.sh";
+const WD = MOD + "/bin/watchdog.sh";
+
+const KX_KEYS = [
+  ["DEVFREQ", "devfreq 总线调频"],
+  ["KSM", "KSM 内存去重"],
+  ["THP", "透明大页"],
+  ["SCHEDTUNE", "schedtune 调度增强"],
+  ["TCP_TUNE", "TCP 三层缓冲"],
+  ["BOOST", "触控 boost"],
+  ["FS_TUNE", "文件系统上限"],
+  ["WATCHDOG", "守护看门狗"],
+  ["BATT_PROFILE", "低电量自动省电"]
+];
+
+async function kxRender() {
+  const box = document.getElementById("kxList");
+  if (!box) return;
+  let html = "";
+  for (const [k, label] of KX_KEYS) {
+    const r = await sh("sh " + MOD + "/bin/tuner.sh get " + k);
+    const on = (r.stdout || "").trim() === "1";
+    html += '<label style="display:flex;align-items:center;gap:8px;padding:6px 0">' +
+      '<input type="checkbox" data-k="' + k + '"' + (on ? " checked" : "") + '>' +
+      '<span>' + label + '</span></label>';
+  }
+  box.innerHTML = html;
+  box.querySelectorAll("input[type=checkbox]").forEach(function (cb) {
+    cb.addEventListener("change", async function () {
+      await sh("sh " + MOD + "/bin/tuner.sh set " + cb.dataset.k + " " + (cb.checked ? "1" : "0"));
+      toast(cb.dataset.k + (cb.checked ? " 已开启" : " 已关闭"));
+    });
+  });
+}
+
+document.getElementById("kxStatus").addEventListener("click", async function () {
+  const r = await sh("sh " + KN + " status");
+  put("kxOut", r.stdout + r.stderr);
+});
+
+document.getElementById("kxDev").addEventListener("click", async function () {
+  put("kxOut", "读取中…");
+  const r = await sh("sh " + KN + " devfreq-list");
+  put("kxOut", r.stdout || "（设备无 devfreq 节点）");
+});
+
+document.getElementById("wdStart").addEventListener("click", async function () {
+  const r = await sh("sh " + WD + " start");
+  put("wdOut", r.stdout + r.stderr);
+});
+
+document.getElementById("wdStop").addEventListener("click", async function () {
+  const r = await sh("sh " + WD + " stop");
+  put("wdOut", r.stdout + r.stderr);
+});
+
+document.getElementById("wdStatus").addEventListener("click", async function () {
+  const r = await sh("sh " + WD + " status");
+  put("wdOut", r.stdout + r.stderr);
+});
+
+document.getElementById("wdLog").addEventListener("click", async function () {
+  const r = await sh("sh " + WD + " log");
+  put("wdOut", r.stdout || "（无日志）");
+});
+
+const KN = MOD + "/bin/kernel.sh";
+const WD = MOD + "/bin/watchdog.sh";
+
+const KX_KEYS = [
+  ["DEVFREQ", "devfreq 总线调频"],
+  ["KSM", "KSM 内存去重"],
+  ["THP", "透明大页"],
+  ["SCHEDTUNE", "schedtune 调度增强"],
+  ["TCP_TUNE", "TCP 三层缓冲"],
+  ["BOOST", "触控 boost"],
+  ["FS_TUNE", "文件系统上限"],
+  ["WATCHDOG", "守护看门狗"],
+  ["BATT_PROFILE", "低电量自动省电"]
+];
+
+async function kxRender() {
+  const box = document.getElementById("kxList");
+  if (!box) return;
+  let html = "";
+  for (const [k, label] of KX_KEYS) {
+    const r = await sh("sh " + MOD + "/bin/tuner.sh get " + k);
+    const on = (r.stdout || "").trim() === "1";
+    html += '<label style="display:flex;align-items:center;gap:8px;padding:6px 0">' +
+      '<input type="checkbox" data-k="' + k + '"' + (on ? " checked" : "") + '>' +
+      '<span>' + label + '</span></label>';
+  }
+  box.innerHTML = html;
+  box.querySelectorAll("input[type=checkbox]").forEach(function (cb) {
+    cb.addEventListener("change", async function () {
+      await sh("sh " + MOD + "/bin/tuner.sh set " + cb.dataset.k + " " + (cb.checked ? "1" : "0"));
+      toast(cb.dataset.k + (cb.checked ? " 已开启" : " 已关闭"));
+    });
+  });
+}
+
+document.getElementById("kxStatus").addEventListener("click", async function () {
+  const r = await sh("sh " + KN + " status");
+  put("kxOut", r.stdout + r.stderr);
+});
+
+document.getElementById("kxDev").addEventListener("click", async function () {
+  put("kxOut", "读取中…");
+  const r = await sh("sh " + KN + " devfreq-list");
+  put("kxOut", r.stdout || "（设备无 devfreq 节点）");
+});
+
+document.getElementById("wdStart").addEventListener("click", async function () {
+  const r = await sh("sh " + WD + " start");
+  put("wdOut", r.stdout + r.stderr);
+});
+
+document.getElementById("wdStop").addEventListener("click", async function () {
+  const r = await sh("sh " + WD + " stop");
+  put("wdOut", r.stdout + r.stderr);
+});
+
+document.getElementById("wdStatus").addEventListener("click", async function () {
+  const r = await sh("sh " + WD + " status");
+  put("wdOut", r.stdout + r.stderr);
+});
+
+document.getElementById("wdLog").addEventListener("click", async function () {
+  const r = await sh("sh " + WD + " log");
+  put("wdOut", r.stdout || "（无日志）");
 });
 
 try { ksu.enableEdgeToEdge(true); } catch (e) {}
