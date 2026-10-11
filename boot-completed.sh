@@ -6,6 +6,14 @@ CFG=$CFG_DIR/config.conf
 
 [ -f "$CFG" ] || exit 0
 
+: > "$CFG_DIR/bootfail"
+chmod 600 "$CFG_DIR/bootfail" 2>/dev/null
+
+if [ -f "$MODDIR/disable" ]; then
+  printf '%s\n' "safe mode was triggered, module left disabled" >> "$CFG_DIR/tuner.log"
+  exit 0
+fi
+
 get() {
   sed -n "s/^$1=//p" "$CFG" 2>/dev/null | tail -n 1
 }
@@ -42,6 +50,9 @@ if [ "$(get THERMAL_OPEN)" = "1" ]; then
 fi
 if [ "$(get SELINUX_PERM)" = "1" ]; then
   desc="$desc | SELinux 宽容"
+fi
+if [ "$(get SAFEGUARD)" = "1" ]; then
+  desc="$desc | 防砖已开"
 fi
 
 if command -v ksud >/dev/null 2>&1; then

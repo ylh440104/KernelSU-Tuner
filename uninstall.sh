@@ -6,7 +6,7 @@ BAK=$CFG_DIR/backup.conf
 
 MODDIR=${0%/*}
 
-for d in autopilot guard appwatch; do
+for d in autopilot guard appwatch shield; do
   if [ -f "$CFG_DIR/$d.pid" ]; then
     p=$(cat "$CFG_DIR/$d.pid" 2>/dev/null)
     [ -n "$p" ] && kill "$p" 2>/dev/null

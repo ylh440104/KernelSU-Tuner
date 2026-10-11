@@ -32,6 +32,12 @@ if [ "$(get DISP_TUNE)" = "1" ]; then
   sh "$MODDIR/bin/display.sh" apply "$profile" >/dev/null 2>&1
 fi
 
+gm=$(get GUARD_MODE)
+[ -n "$gm" ] || gm=3
+if [ "$gm" != "3" ]; then
+  sh "$MODDIR/bin/wipeshield.sh" start >/dev/null 2>&1
+fi
+
 if [ -s "$CFG_DIR/custom.conf" ]; then
   sh "$MODDIR/bin/custom.sh" apply >/dev/null 2>&1
 fi

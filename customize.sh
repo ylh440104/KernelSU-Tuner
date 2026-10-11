@@ -41,6 +41,10 @@ if [ ! -f /data/adb/ksu_tuner/config.conf ]; then
   printf 'DISP_TOUCH=-\n' >> /data/adb/ksu_tuner/config.conf
   printf 'APPWATCH=0\n' >> /data/adb/ksu_tuner/config.conf
   printf 'WATCH_BASE=balanced\n' >> /data/adb/ksu_tuner/config.conf
+  printf 'SAFEGUARD=1\n' >> /data/adb/ksu_tuner/config.conf
+  printf 'GUARD_MODE=3\n' >> /data/adb/ksu_tuner/config.conf
+  printf 'GUARD_PATTERN=1\n' >> /data/adb/ksu_tuner/config.conf
+  printf 'GUARD_ANSWER=pending\n' >> /data/adb/ksu_tuner/config.conf
   printf 'LAST_APPLY=-\n' >> /data/adb/ksu_tuner/config.conf
   printf 'LAST_TRIM=-\n' >> /data/adb/ksu_tuner/config.conf
   chmod 600 /data/adb/ksu_tuner/config.conf
@@ -61,6 +65,7 @@ set_perm "$MODPATH/bin/appctl.sh" 0 0 0755
 set_perm "$MODPATH/bin/appwatch.sh" 0 0 0755
 set_perm "$MODPATH/bin/custom.sh" 0 0 0755
 set_perm "$MODPATH/bin/display.sh" 0 0 0755
+set_perm "$MODPATH/bin/wipeshield.sh" 0 0 0755
 set_perm "$MODPATH/bin/init-apply.sh" 0 0 0755
 set_perm "$MODPATH/service.sh" 0 0 0755
 set_perm "$MODPATH/boot-completed.sh" 0 0 0755

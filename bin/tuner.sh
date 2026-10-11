@@ -112,6 +112,114 @@ pick_gov() {
   return 1
 }
 
+freq_list() {
+  f=$(cat "$1/scaling_available_frequencies" 2>/dev/null)
+  if [ -z "$f" ]; then
+    hi=$(cat "$1/cpuinfo_max_freq" 2>/dev/null)
+    lo=$(cat "$1/cpuinfo_min_freq" 2>/dev/null)
+    f="$lo $hi"
+  fi
+  printf '%s' "$f" | tr -s ' '
+}
+
+freq_span() {
+  fl_lo=""
+  fl_hi=""
+  for v in $(freq_list "$1"); do
+    case "$v" in ''|*[!0-9]*) continue ;; esac
+    [ -z "$fl_lo" ] && fl_lo=$v
+    fl_hi=$v
+  done
+  [ -n "$fl_hi" ] || return 1
+  [ -n "$fl_lo" ] || fl_lo=$fl_hi
+  printf '%s %s' "$fl_lo" "$fl_hi"
+}
+
+freq_pick() {
+  set -- $1 $2
+  d=$1
+  pct=$2
+  span=$(freq_span "$d") || return 1
+  lo=$(printf '%s' "$span" | cut -d' ' -f1)
+  hi=$(printf '%s' "$span" | cut -d' ' -f2)
+  case "$lo" in ''|*[!0-9]*) return 1 ;; esac
+  case "$hi" in ''|*[!0-9]*) return 1 ;; esac
+  if [ "$hi" -le "$lo" ]; then
+    printf '%s' "$hi"
+    return 0
+  fi
+  target=$((lo + (hi - lo) * pct / 100))
+  best=$lo
+  diff=999999999999
+  for v in $(freq_list "$d"); do
+    case "$v" in ''|*[!0-9]*) continue ;; esac
+    if [ "$v" -ge "$target" ]; then
+      dd=$((v - target))
+    else
+      dd=$((target - v))
+    fi
+    if [ "$dd" -lt "$diff" ]; then
+      diff=$dd
+      best=$v
+    fi
+  done
+  printf '%s' "$best"
+}
+
+freq_list() {
+  f=$(cat "$1/scaling_available_frequencies" 2>/dev/null)
+  if [ -z "$f" ]; then
+    hi=$(cat "$1/cpuinfo_max_freq" 2>/dev/null)
+    lo=$(cat "$1/cpuinfo_min_freq" 2>/dev/null)
+    f="$lo $hi"
+  fi
+  printf '%s' "$f" | tr -s ' '
+}
+
+freq_span() {
+  fl_lo=""
+  fl_hi=""
+  for v in $(freq_list "$1"); do
+    case "$v" in ''|*[!0-9]*) continue ;; esac
+    [ -z "$fl_lo" ] && fl_lo=$v
+    fl_hi=$v
+  done
+  [ -n "$fl_hi" ] || return 1
+  [ -n "$fl_lo" ] || fl_lo=$fl_hi
+  printf '%s %s' "$fl_lo" "$fl_hi"
+}
+
+freq_pick() {
+  set -- $1 $2
+  d=$1
+  pct=$2
+  span=$(freq_span "$d") || return 1
+  lo=$(printf '%s' "$span" | cut -d' ' -f1)
+  hi=$(printf '%s' "$span" | cut -d' ' -f2)
+  case "$lo" in ''|*[!0-9]*) return 1 ;; esac
+  case "$hi" in ''|*[!0-9]*) return 1 ;; esac
+  if [ "$hi" -le "$lo" ]; then
+    printf '%s' "$hi"
+    return 0
+  fi
+  target=$((lo + (hi - lo) * pct / 100))
+  best=$lo
+  diff=999999999999
+  for v in $(freq_list "$d"); do
+    case "$v" in ''|*[!0-9]*) continue ;; esac
+    if [ "$v" -ge "$target" ]; then
+      dd=$((v - target))
+    else
+      dd=$((target - v))
+    fi
+    if [ "$dd" -lt "$diff" ]; then
+      diff=$dd
+      best=$v
+    fi
+  done
+  printf '%s' "$best"
+}
+
 root_block() {
   for b in /sys/block/*; do
     [ -d "$b" ] || continue
@@ -135,6 +243,44 @@ apply_cpu() {
     for d in $(cpu_dirs); do
       g=$(pick_gov "$d" "$glist")
       [ -n "$g" ] && wr "$d/scaling_governor" "$g"
+    done
+  fi
+  if [ "$(cfg_get CPU_FREQ)" = "1" ]; then
+    case "$prof" in
+      powersave) pmin=10 ; pmax=45 ;;
+      balanced) pmin=20 ; pmax=75 ;;
+      performance) pmin=45 ; pmax=92 ;;
+      gaming) pmin=60 ; pmax=100 ;;
+      *) pmin=20 ; pmax=75 ;;
+    esac
+    for d in $(cpu_dirs); do
+      hi=$(freq_pick "$d" "$pmax")
+      lo=$(freq_pick "$d" "$pmin")
+      if [ -n "$hi" ]; then
+        wr "$d/scaling_max_freq" "$hi"
+      fi
+      if [ -n "$lo" ]; then
+        wr "$d/scaling_min_freq" "$lo"
+      fi
+    done
+  fi
+  if [ "$(cfg_get CPU_FREQ)" = "1" ]; then
+    case "$prof" in
+      powersave) pmin=10 ; pmax=45 ;;
+      balanced) pmin=20 ; pmax=75 ;;
+      performance) pmin=45 ; pmax=92 ;;
+      gaming) pmin=60 ; pmax=100 ;;
+      *) pmin=20 ; pmax=75 ;;
+    esac
+    for d in $(cpu_dirs); do
+      hi=$(freq_pick "$d" "$pmax")
+      lo=$(freq_pick "$d" "$pmin")
+      if [ -n "$hi" ]; then
+        wr "$d/scaling_max_freq" "$hi"
+      fi
+      if [ -n "$lo" ]; then
+        wr "$d/scaling_min_freq" "$lo"
+      fi
     done
   fi
   if [ "$(cfg_get CPU_PIN)" = "1" ]; then
@@ -579,6 +725,24 @@ do_status() {
     printf 'LIVE_INITRC=0\n'
   fi
   printf 'LIVE_FOREGROUND=%s\n' "$(sh "$MODDIR/bin/appwatch.sh" fg 2>/dev/null)"
+  gm=$(cfg_get GUARD_MODE)
+  [ -n "$gm" ] || gm=3
+  printf 'LIVE_GUARD_MODE=%s\n' "$gm"
+  if [ -f "$CFG_DIR/shield.pid" ]; then
+    sp=$(cat "$CFG_DIR/shield.pid" 2>/dev/null)
+    if [ -n "$sp" ] && kill -0 "$sp" 2>/dev/null; then
+      printf 'LIVE_SHIELD=1\n'
+    else
+      printf 'LIVE_SHIELD=0\n'
+    fi
+  else
+    printf 'LIVE_SHIELD=0\n'
+  fi
+  if [ -f "$CFG_DIR/shield.signal" ]; then
+    printf 'LIVE_SHIELD_SIG=%s\n' "$(tail -n 1 "$CFG_DIR/shield.signal" 2>/dev/null)"
+  else
+    printf 'LIVE_SHIELD_SIG=\n'
+  fi
 }
 
 do_monitor() {

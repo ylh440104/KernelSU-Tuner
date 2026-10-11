@@ -134,6 +134,7 @@ cursor:pointer;white-space:nowrap;border:1px solid transparent
   <div class="tab" data-t="app">应用管理</div>
   <div class="tab" data-t="rule">应用策略</div>
   <div class="tab" data-t="adv">高级</div>
+  <div class="tab" data-t="guard">防护</div>
   <div class="tab" data-t="live">实时监控</div>
 </div>
 
@@ -351,6 +352,47 @@ cursor:pointer;white-space:nowrap;border:1px solid transparent
   </div>
 </div>
 
+<div class="pane" id="p-guard">
+  <div class="card">
+    <h2>防格机防护 <span class="muted" id="gsState"></span></h2>
+    <div class="muted" style="margin-bottom:12px">
+      监控正在运行的进程与开机脚本，发现删库/格式化类操作时按所选模式处理。<br>
+      <b>增强模式</b>：检测到立即终止进程。<br>
+      <b>普通模式</b>：先弹窗询问，等待你选择。<br>
+      <b>不防护</b>：只记录，不干预。
+    </div>
+    <div class="row" id="gsRow1" data-m="1">
+      <div><div class="t">增强模式</div><div class="d">检测到格机命令直接 kill -9，不询问</div></div>
+      <span class="pill b" id="gsPick1">选择</span>
+    </div>
+    <div class="row" id="gsRow2" data-m="2">
+      <div><div class="t">普通模式</div><div class="d">检测到先挂起并弹窗，由你决定是否终止</div></div>
+      <span class="pill b" id="gsPick2">选择</span>
+    </div>
+    <div class="row" id="gsRow3" data-m="3">
+      <div><div class="t">不防护</div><div class="d">关闭监控，仅保留日志</div></div>
+      <span class="pill b" id="gsPick3">选择</span>
+    </div>
+  </div>
+
+  <div class="card" id="gsAlert" style="display:none;border-color:#d84b4b">
+    <h2 style="color:#ff9c9c">⚠ 检测到危险操作</h2>
+    <pre id="gsCmd" style="max-height:120px"></pre>
+    <div class="btns" style="margin-top:12px">
+      <button class="btn r" id="gsKill">终止该进程</button>
+      <button class="btn" id="gsAllow">放行并加白</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>拦截记录</h2>
+    <pre id="gsLog">暂无记录</pre>
+    <div class="btns" style="margin-top:10px">
+      <button class="btn s" id="gsReload">刷新</button>
+    </div>
+  </div>
+</div>
+
 <div class="pane" id="p-live">
   <div class="card">
     <h2>实时曲线</h2>
@@ -503,6 +545,8 @@ async function load() {
   document.getElementById("dMinHz").textContent = pick(m, "DISP_MIN_HZ", "-") + " Hz";
   document.getElementById("dNodes").textContent = pick(m, "DISP_TOUCH_NODES", "0") + " 个";
   document.getElementById("initrcSt").textContent = pick(m, "LIVE_INITRC", "0") === "1" ? "已注入" : "未注入";
+  gsSetActive(pick(m, "CFG_GUARD_MODE", "3"));
+  if (pick(m, "CFG_GUARD_MODE", "3") === "2") gsCheckSignal();
   document.getElementById("cCount").textContent = "(" + pick(m, "LIVE_CUSTOMCOUNT", "0") + ")";
 
   const memT = num(pick(m, "LIVE_MEMTOTAL", "0"), 0);
@@ -986,6 +1030,107 @@ document.querySelectorAll(".tab").forEach(function (t) {
     if (t.dataset.t === "adv" && !document.getElementById("cList").dataset.loaded) {
       document.getElementById("cList").dataset.loaded = "1";
       loadCustom();
+    }
+  });
+});
+
+const WS = MOD + "/bin/wipeshield.sh";
+let gsMode = "3";
+let gsPoll = null;
+let gsShownSig = "";
+
+function gsSetActive(m) {
+  gsMode = String(m);
+  ["1", "2", "3"].forEach(function (k) {
+    const row = document.getElementById("gsRow" + k);
+    const pill = document.getElementById("gsPick" + k);
+    if (!row) return;
+    const on = k === gsMode;
+    row.style.borderColor = on ? "#4f8cff" : "";
+    row.style.background = on ? "rgba(79,140,255,.08)" : "";
+    pill.textContent = on ? "当前" : "选择";
+    pill.className = "pill" + (on ? " a" : " b");
+  });
+  document.getElementById("gsState").textContent =
+    gsMode === "1" ? "增强模式运行中" : (gsMode === "2" ? "普通模式运行中" : "未启用防护");
+}
+
+async function gsPick(m) {
+  await sh("sh " + WS + " mode " + m);
+  await saveKey("GUARD_MODE", String(m));
+  if (m === "3") {
+    await sh("sh " + WS + " stop");
+    document.getElementById("gsAlert").style.display = "none";
+    gsShownSig = "";
+    toast("已关闭防护");
+  } else {
+    await sh("sh " + WS + " start");
+    toast(m === "1" ? "已启用增强模式" : "已启用普通模式");
+  }
+  gsSetActive(m);
+  await gsLoadLog();
+}
+
+async function gsLoadLog() {
+  const r = await sh("sh " + WS + " log");
+  document.getElementById("gsLog").textContent = r.stdout.trim() || "暂无记录";
+}
+
+async function gsCheckSignal() {
+  if (gsMode !== "2") return;
+  const r = await sh("sh " + WS + " signal");
+  const line = r.stdout.trim();
+  if (!line) {
+    document.getElementById("gsAlert").style.display = "none";
+    gsShownSig = "";
+    return;
+  }
+  const parts = line.split("|");
+  if (parts[1] !== "normal") return;
+  if (line === gsShownSig) return;
+  gsShownSig = line;
+  const pid = parts[2] || "?";
+  const cmd = parts.slice(3).join("|");
+  document.getElementById("gsCmd").textContent =
+    "PID: " + pid + "
+
+命令:
+" + cmd;
+  document.getElementById("gsAlert").style.display = "block";
+  toast("检测到危险操作，请确认");
+}
+
+["1", "2", "3"].forEach(function (k) {
+  const row = document.getElementById("gsRow" + k);
+  if (row) row.addEventListener("click", function () { gsPick(k); });
+});
+
+document.getElementById("gsKill").addEventListener("click", async function () {
+  await sh("sh " + WS + " answer kill");
+  document.getElementById("gsAlert").style.display = "none";
+  toast("已终止该进程");
+  await gsLoadLog();
+});
+
+document.getElementById("gsAllow").addEventListener("click", async function () {
+  await sh("sh " + WS + " answer allow");
+  document.getElementById("gsAlert").style.display = "none";
+  toast("已放行并加入白名单");
+  await gsLoadLog();
+});
+
+document.getElementById("gsReload").addEventListener("click", gsLoadLog);
+
+document.querySelectorAll(".tab").forEach(function (t) {
+  t.addEventListener("click", function () {
+    if (t.dataset.t === "guard") {
+      gsLoadLog();
+      if (!gsPoll) {
+        gsPoll = setInterval(gsCheckSignal, 2000);
+      }
+    } else if (gsPoll) {
+      clearInterval(gsPoll);
+      gsPoll = null;
     }
   });
 });
