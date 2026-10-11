@@ -49,10 +49,48 @@ bk_save() {
 
 wr() {
   [ -f "$1" ] || return 1
+  if [ "$DRY_RUN" = "1" ]; then
+    old=$(head -n 1 "$1" 2>/dev/null | tr -d '\n\r')
+    [ "$old" = "$2" ] && return 0
+    printf '  %s: %s -> %s\n' "$1" "${old:-?}" "$2"
+    DRY_N=$((DRY_N + 1))
+    return 0
+  fi
   bk_save "$1"
   chmod 0644 "$1" 2>/dev/null
   ( printf '%s' "$2" > "$1" ) 2>/dev/null || return 1
   return 0
+}
+
+do_dry() {
+  prof=$1
+  [ -n "$prof" ] || prof=$(cfg_get PROFILE)
+  [ -n "$prof" ] || prof=balanced
+  case "$prof" in
+    powersave|balanced|performance|gaming) ;;
+    *) prof=balanced ;;
+  esac
+  DRY_RUN=1
+  DRY_N=0
+  printf '预设 %s 将改动以下节点（未列出表示值已一致或节点不存在）：\n' "$prof"
+  apply_cpu "$prof"
+  apply_gpu "$prof"
+  apply_io "$prof"
+  apply_vm "$prof"
+  apply_net
+  apply_dns "$prof"
+  apply_lmk "$prof"
+  apply_zram
+  apply_zram_size "$prof"
+  apply_thermal
+  apply_printk
+  apply_selinux
+  apply_ipv6
+  DRY_RUN=0
+  printf '\n共 %s 处变更，未做任何写入。\n' "$DRY_N"
+  if [ -s "$CFG_DIR/custom.conf" ]; then
+    printf '另有自定义参数 %s 项，执行 apply 时会一并写入。\n' "$(wc -l < "$CFG_DIR/custom.conf" | tr -d ' ')"
+  fi
 }
 
 acquire_lock() {
@@ -673,6 +711,12 @@ do_apply() {
   if [ -s "$CFG_DIR/custom.conf" ] && [ -x "$MODDIR/bin/custom.sh" ]; then
     sh "$MODDIR/bin/custom.sh" apply >/dev/null 2>&1
   fi
+  if [ -s "$CFG_DIR/appcustom.conf" ] && [ -x "$MODDIR/bin/custom.sh" ]; then
+    fg=$(sh "$MODDIR/bin/appwatch.sh" fg 2>/dev/null)
+    if [ -n "$fg" ]; then
+      sh "$MODDIR/bin/custom.sh" app-apply "$fg" >/dev/null 2>&1
+    fi
+  fi
   cfg_set LAST_APPLY "$(ts)"
   log "已应用预设: $prof"
   printf '已应用预设: %s\n' "$prof"
@@ -998,6 +1042,9 @@ case "$cmd" in
     ;;
   zones)
     list_thermal
+    ;;
+  dry)
+    do_dry "$1"
     ;;
   *)
     printf 'usage: tuner.sh {apply [profile]|fast [profile]|monitor|revert|status|set K V|get K|list|trim|log|clear-log|reset [profile]}\n'

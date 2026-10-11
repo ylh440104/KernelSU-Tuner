@@ -3,11 +3,13 @@
 CFG_DIR=/data/adb/ksu_tuner
 CUSTOM=$CFG_DIR/custom.conf
 BAK=$CFG_DIR/backup.conf
+APPC=$CFG_DIR/appcustom.conf
 SYS=${KSU_SYS:-}
 
 mkdir -p "$CFG_DIR" 2>/dev/null
 [ -f "$CUSTOM" ] || : > "$CUSTOM"
 [ -f "$BAK" ] || : > "$BAK"
+[ -f "$APPC" ] || : > "$APPC"
 
 clean() {
   printf '%s' "$1" | tr -d '\n\r'
@@ -32,6 +34,13 @@ valid_path() {
   esac
   case "$1" in
     *"|"*) return 1 ;;
+  esac
+  return 0
+}
+
+valid_pkg() {
+  case "$1" in
+    ''|*[!A-Za-z0-9._-]*) return 1 ;;
   esac
   return 0
 }
@@ -100,6 +109,10 @@ bk_save() {
 wr() {
   [ -f "$1" ] || return 1
   bk_save "$1"
+  if [ -n "$SYS" ]; then
+    rp=${1#"$SYS"}
+    [ "$rp" != "$1" ] && bk_save "$rp"
+  fi
   chmod 0644 "$1" 2>/dev/null
   ( printf '%s' "$2" > "$1" ) 2>/dev/null || return 1
   return 0
@@ -223,6 +236,82 @@ do_revert() {
   printf '已还原 %s 项自定义参数\n' "$n"
 }
 
+app_list() {
+  while IFS='|' read -r pkg path val; do
+    [ -n "$pkg" ] || continue
+    cur=$(read1 "$SYS$path")
+    printf '%s|%s|%s|%s\n' "$pkg" "$path" "$val" "$cur"
+  done < "$APPC"
+}
+
+app_add() {
+  pkg=$(clean "$1")
+  path=$(clean "$2")
+  val=$(clean "$3")
+  valid_pkg "$pkg" || { printf 'ERR 包名无效\n'; exit 1; }
+  valid_path "$path" || { printf 'ERR 路径无效\n'; exit 1; }
+  [ -n "$val" ] || { printf 'ERR 值不能为空\n'; exit 1; }
+  if [ -f "$SYS$path" ]; then
+    out=$(range_check "$SYS$path" "$val")
+    case "$out" in
+      ERR*) printf '%s\n' "$out"; exit 1 ;;
+    esac
+  fi
+  awk -F'|' -v p="$pkg" -v q="$path" '!($1==p && $2==q)' "$APPC" > "$APPC.t" 2>/dev/null
+  mv -f "$APPC.t" "$APPC" 2>/dev/null
+  printf '%s|%s|%s\n' "$pkg" "$path" "$val" >> "$APPC"
+  printf 'OK\n'
+}
+
+app_del() {
+  pkg=$(clean "$1")
+  path=$(clean "$2")
+  valid_pkg "$pkg" || { printf 'ERR 包名无效\n'; exit 1; }
+  if [ -n "$path" ]; then
+    awk -F'|' -v p="$pkg" -v q="$path" '!($1==p && $2==q)' "$APPC" > "$APPC.t" 2>/dev/null
+  else
+    awk -F'|' -v p="$pkg" '$1!=p' "$APPC" > "$APPC.t" 2>/dev/null
+  fi
+  mv -f "$APPC.t" "$APPC" 2>/dev/null
+  printf 'OK\n'
+}
+
+app_apply() {
+  pkg=$(clean "$1")
+  valid_pkg "$pkg" || { printf 'ERR 包名无效\n'; exit 1; }
+  n=0
+  f=0
+  while IFS='|' read -r p path val; do
+    [ -n "$p" ] || continue
+    [ "$p" = "$pkg" ] || continue
+    valid_path "$path" || continue
+    if wr "$SYS$path" "$val"; then
+      n=$((n + 1))
+    else
+      f=$((f + 1))
+    fi
+  done < "$APPC"
+  printf '已应用 %s 项，失败 %s 项\n' "$n" "$f"
+}
+
+app_revert() {
+  pkg=$(clean "$1")
+  valid_pkg "$pkg" || { printf 'ERR 包名无效\n'; exit 1; }
+  n=0
+  while IFS='|' read -r p path val; do
+    [ -n "$p" ] || continue
+    [ "$p" = "$pkg" ] || continue
+    valid_path "$path" || continue
+    full="$SYS$path"
+    bv=$(awk -F'|' -v q="$full" -v q2="$path" '$1==q || $1==q2 {print $2; exit}' "$BAK" 2>/dev/null)
+    [ -n "$bv" ] || continue
+    chmod 0644 "$full" 2>/dev/null
+    ( printf '%s' "$bv" > "$full" ) 2>/dev/null
+    n=$((n + 1))
+  done < "$APPC"
+  printf '已还原 %s 项\n' "$n"
+}
+
 case "$1" in
   list)
     do_list
@@ -248,7 +337,22 @@ case "$1" in
   revert)
     do_revert
     ;;
+  app-list)
+    app_list
+    ;;
+  app-add)
+    app_add "$2" "$3" "$4"
+    ;;
+  app-del)
+    app_del "$2" "$3"
+    ;;
+  app-apply)
+    app_apply "$2"
+    ;;
+  app-revert)
+    app_revert "$2"
+    ;;
   *)
-    printf 'usage: custom.sh {list|check <path> <value>|add <path> <value> [label] [force]|del <path>|set <path> <value> [force]|read <path>|apply|revert}\n'
+    printf 'usage: custom.sh {list|check <path> <value>|add <path> <value> [label] [force]|del <path>|set <path> <value> [force]|read <path>|apply|revert|app-list|app-add <pkg> <path> <value>|app-del <pkg> [path]|app-apply <pkg>|app-revert <pkg>}\n'
     ;;
 esac

@@ -135,6 +135,7 @@ cursor:pointer;white-space:nowrap;border:1px solid transparent
   <div class="tab" data-t="rule">应用策略</div>
   <div class="tab" data-t="adv">高级</div>
   <div class="tab" data-t="guard">防护</div>
+  <div class="tab" data-t="tool">工具</div>
   <div class="tab" data-t="live">实时监控</div>
 </div>
 
@@ -415,6 +416,73 @@ cursor:pointer;white-space:nowrap;border:1px solid transparent
     <div class="btns" style="margin-top:10px">
       <button class="btn s" id="gsReload">刷新</button>
     </div>
+  </div>
+</div>
+
+<div class="pane" id="p-tool">
+  <div class="card">
+    <h2>配置备份</h2>
+    <div class="muted" style="margin-bottom:12px">
+      把当前选项、per-app 规则、自定义参数和白名单打包成一个 JSON 文件，存放在 /sdcard/KernelSU-Tuner-Backup。
+    </div>
+    <div class="btns">
+      <button class="btn p" id="bkExport">导出</button>
+      <button class="btn" id="bkList">列出文件</button>
+    </div>
+    <div class="field" style="margin-top:12px"><label>导入文件路径</label>
+      <input type="text" id="bkPath" placeholder="/sdcard/KernelSU-Tuner-Backup/ksu-tuner-....json">
+    </div>
+    <div class="btns">
+      <button class="btn r" id="bkImport">导入</button>
+    </div>
+    <pre id="bkOut" style="margin-top:10px">—</pre>
+  </div>
+
+  <div class="card">
+    <h2>自定义预设</h2>
+    <div class="muted" style="margin-bottom:12px">
+      在四个内置档基础上保存自己的方案，名字只能用字母、数字、下划线、连字符。
+    </div>
+    <div class="field"><label>名称</label><input type="text" id="psName" placeholder="night"></div>
+    <div class="field"><label>基准档</label>
+      <select id="psBase">
+        <option value="powersave">省电</option>
+        <option value="balanced">均衡</option>
+        <option value="performance">性能</option>
+        <option value="gaming">游戏</option>
+      </select>
+    </div>
+    <div class="btns">
+      <button class="btn p" id="psSave">保存</button>
+      <button class="btn" id="psList">刷新列表</button>
+    </div>
+    <pre id="psOut" style="margin-top:10px">—</pre>
+  </div>
+
+  <div class="card">
+    <h2>应用级参数</h2>
+    <div class="muted" style="margin-bottom:12px">
+      指定应用在前台时写入特定内核节点。适合给单个游戏锁定频率上限。
+    </div>
+    <div class="field"><label>包名</label><input type="text" id="acPkg" placeholder="com.tencent.tmgp.sgame"></div>
+    <div class="field"><label>节点路径</label><input type="text" id="acPath" placeholder="/sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq"></div>
+    <div class="field"><label>值</label><input type="text" id="acVal" placeholder="1516800"></div>
+    <div class="btns">
+      <button class="btn p" id="acAdd">添加</button>
+      <button class="btn" id="acList">刷新列表</button>
+    </div>
+    <pre id="acOut" style="margin-top:10px">—</pre>
+  </div>
+
+  <div class="card">
+    <h2>变更预览</h2>
+    <div class="muted" style="margin-bottom:12px">
+      列出应用当前预设会改动哪些节点，不写入任何内容。
+    </div>
+    <div class="btns">
+      <button class="btn" id="drRun">预览</button>
+    </div>
+    <pre id="drOut" style="margin-top:10px">—</pre>
   </div>
 </div>
 
@@ -1169,6 +1237,12 @@ document.getElementById("gsReload").addEventListener("click", gsLoadLog);
 
 document.querySelectorAll(".tab").forEach(function (t) {
   t.addEventListener("click", function () {
+    if (t.dataset.t === "tool") {
+      const pr = document.getElementById("psList");
+      if (pr) pr.click();
+      const ar = document.getElementById("acList");
+      if (ar) ar.click();
+    }
     if (t.dataset.t === "guard") {
       gsLoadLog();
       if (!gsPoll) {
@@ -1198,6 +1272,86 @@ function zoneMenu() {
 
 const zb = document.getElementById("zoneBtn");
 if (zb) zb.addEventListener("click", zoneMenu);
+
+const BK = MOD + "/bin/backup.sh";
+const PS = MOD + "/bin/presets.sh";
+const CU = MOD + "/bin/custom.sh";
+const TU = MOD + "/bin/tuner.sh";
+
+function put(id, txt) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = txt && txt.trim() ? txt.trim() : "—";
+}
+
+function need(id, name) {
+  const v = document.getElementById(id).value.trim();
+  if (!v) { toast("请填写" + name); return null; }
+  return v;
+}
+
+document.getElementById("bkExport").addEventListener("click", async function () {
+  const r = await sh("sh " + BK + " export");
+  put("bkOut", r.stdout + r.stderr);
+  toast("已导出");
+});
+
+document.getElementById("bkList").addEventListener("click", async function () {
+  const r = await sh("sh " + BK + " list");
+  put("bkOut", r.stdout || "（无备份文件）");
+});
+
+document.getElementById("bkImport").addEventListener("click", async function () {
+  const p = need("bkPath", "文件路径");
+  if (!p) return;
+  const r = await sh("sh " + BK + " import '" + p + "'");
+  put("bkOut", r.stdout + r.stderr);
+  await load();
+});
+
+document.getElementById("psSave").addEventListener("click", async function () {
+  const n = need("psName", "名称");
+  if (!n) return;
+  const r = await sh("sh " + PS + " save '" + n + "' " + document.getElementById("psBase").value);
+  put("psOut", r.stdout + r.stderr);
+  document.getElementById("psName").value = "";
+});
+
+document.getElementById("psList").addEventListener("click", async function () {
+  const r = await sh("sh " + PS + " list");
+  const lines = (r.stdout || "").trim().split("\n").filter(Boolean);
+  if (!lines.length) { put("psOut", "（无自定义预设）"); return; }
+  put("psOut", lines.map(function (l) {
+    const p = l.split("|");
+    return p[0] + "  (基准 " + p[1] + ")  " + (p[2] || "");
+  }).join("\n"));
+});
+
+document.getElementById("acAdd").addEventListener("click", async function () {
+  const pkg = need("acPkg", "包名");
+  if (!pkg) return;
+  const path = need("acPath", "节点路径");
+  if (!path) return;
+  const val = need("acVal", "值");
+  if (!val) return;
+  const r = await sh("sh " + CU + " app-add '" + pkg + "' '" + path + "' '" + val + "'");
+  put("acOut", r.stdout + r.stderr);
+});
+
+document.getElementById("acList").addEventListener("click", async function () {
+  const r = await sh("sh " + CU + " app-list");
+  const lines = (r.stdout || "").trim().split("\n").filter(Boolean);
+  if (!lines.length) { put("acOut", "（无应用级参数）"); return; }
+  put("acOut", lines.map(function (l) {
+    const p = l.split("|");
+    return p[0] + "\n  设 " + p[1] + " = " + p[2] + "\n  当前 " + (p[3] || "?");
+  }).join("\n\n"));
+});
+
+document.getElementById("drRun").addEventListener("click", async function () {
+  put("drOut", "计算中…");
+  const r = await sh("sh " + TU + " dry");
+  put("drOut", r.stdout + r.stderr);
+});
 
 try { ksu.enableEdgeToEdge(true); } catch (e) {}
 load();
