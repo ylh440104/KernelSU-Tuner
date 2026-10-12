@@ -1260,10 +1260,7 @@ async function gsCheckSignal() {
   const pid = parts[2] || "?";
   const cmd = parts.slice(3).join("|");
   document.getElementById("gsCmd").textContent =
-    "PID: " + pid + "
-
-命令:
-" + cmd;
+    "PID: " + pid + "命令:" + cmd;
   document.getElementById("gsAlert").style.display = "block";
   toast("检测到危险操作，请确认");
 }
@@ -1407,72 +1404,6 @@ document.getElementById("drRun").addEventListener("click", async function () {
   put("drOut", "计算中…");
   const r = await sh("sh " + TU + " dry");
   put("drOut", r.stdout + r.stderr);
-});
-
-const KN = MOD + "/bin/kernel.sh";
-const WD = MOD + "/bin/watchdog.sh";
-
-const KX_KEYS = [
-  ["DEVFREQ", "devfreq 总线调频"],
-  ["KSM", "KSM 内存去重"],
-  ["THP", "透明大页"],
-  ["SCHEDTUNE", "schedtune 调度增强"],
-  ["TCP_TUNE", "TCP 三层缓冲"],
-  ["BOOST", "触控 boost"],
-  ["FS_TUNE", "文件系统上限"],
-  ["WATCHDOG", "守护看门狗"],
-  ["BATT_PROFILE", "低电量自动省电"]
-];
-
-async function kxRender() {
-  const box = document.getElementById("kxList");
-  if (!box) return;
-  let html = "";
-  for (const [k, label] of KX_KEYS) {
-    const r = await sh("sh " + MOD + "/bin/tuner.sh get " + k);
-    const on = (r.stdout || "").trim() === "1";
-    html += '<label style="display:flex;align-items:center;gap:8px;padding:6px 0">' +
-      '<input type="checkbox" data-k="' + k + '"' + (on ? " checked" : "") + '>' +
-      '<span>' + label + '</span></label>';
-  }
-  box.innerHTML = html;
-  box.querySelectorAll("input[type=checkbox]").forEach(function (cb) {
-    cb.addEventListener("change", async function () {
-      await sh("sh " + MOD + "/bin/tuner.sh set " + cb.dataset.k + " " + (cb.checked ? "1" : "0"));
-      toast(cb.dataset.k + (cb.checked ? " 已开启" : " 已关闭"));
-    });
-  });
-}
-
-document.getElementById("kxStatus").addEventListener("click", async function () {
-  const r = await sh("sh " + KN + " status");
-  put("kxOut", r.stdout + r.stderr);
-});
-
-document.getElementById("kxDev").addEventListener("click", async function () {
-  put("kxOut", "读取中…");
-  const r = await sh("sh " + KN + " devfreq-list");
-  put("kxOut", r.stdout || "（设备无 devfreq 节点）");
-});
-
-document.getElementById("wdStart").addEventListener("click", async function () {
-  const r = await sh("sh " + WD + " start");
-  put("wdOut", r.stdout + r.stderr);
-});
-
-document.getElementById("wdStop").addEventListener("click", async function () {
-  const r = await sh("sh " + WD + " stop");
-  put("wdOut", r.stdout + r.stderr);
-});
-
-document.getElementById("wdStatus").addEventListener("click", async function () {
-  const r = await sh("sh " + WD + " status");
-  put("wdOut", r.stdout + r.stderr);
-});
-
-document.getElementById("wdLog").addEventListener("click", async function () {
-  const r = await sh("sh " + WD + " log");
-  put("wdOut", r.stdout || "（无日志）");
 });
 
 const KN = MOD + "/bin/kernel.sh";
