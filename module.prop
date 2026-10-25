@@ -2,6 +2,6 @@ id=KernelSU-Tuner
 name=KernelSU Tuner
 version=v3.4.1
 versionCode=30041
-author=Operit
+author=ylh440104
 description=内核调优全家桶：四档预设、CPU/GPU/devfreq 频率控制、IO/VM/LMK/ZRAM/网络/DNS/显示调优、KSM/THP/schedtune/TCP/boost/fs 扩展调优、温控分区解锁、智能驾驶(省电+电量+定时联动)、电池守护、应用待机管理、per-app 策略与参数、自定义参数与预设、配置导入导出、变更预览、守护看门狗、防砖回滚、防格机三模式，全部可逆
 updateJson=https://modules.kernelsu.org/api/v1/modules/KernelSU-Tuner/update.json
