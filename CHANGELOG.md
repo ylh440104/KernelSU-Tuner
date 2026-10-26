@@ -2,6 +2,12 @@
 
 版本号与 `module.prop` 中的 `version` 一致，括号内为 `versionCode`。
 
+## v3.4.2 (30042)
+
+作者字段改为 ylh440104。
+
+- `module.prop` 的 `author` 与 `module.yaml` 保持一致。
+
 ## v3.4.1 (30041)
 
 修复 WebUI 无法加载。
