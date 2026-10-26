@@ -1,0 +1,16 @@
+service KernelSU-Tuner_boot /system/bin/sh /data/adb/modules/KernelSU-Tuner/bin/init-apply.sh
+    class late_start
+    user root
+    group root
+    oneshot
+    seclabel u:r:ksu:s0
+
+service KernelSU-Tuner_watch /system/bin/sh /data/adb/modules/KernelSU-Tuner/bin/appwatch.sh run
+    class late_start
+    user root
+    group root
+    disabled
+    seclabel u:r:ksu:s0
+
+on property:sys.boot_completed=1
+    start KernelSU-Tuner_watch
