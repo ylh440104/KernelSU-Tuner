@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -122,414 +122,414 @@ cursor:pointer;white-space:nowrap;border:1px solid transparent
 <div class="head">
   <div class="logo">KS</div>
   <div style="flex:1;min-width:0">
-    <h1>KernelSU Tuner <span class="tag" id="tagState">就绪</span></h1>
-    <div class="sub" id="subInfo">正在读取设备信息…</div>
+    <h1>KernelSU Tuner <span class="tag" id="tagState">Ready</span></h1>
+    <div class="sub" id="subInfo">Reading device info…</div>
   </div>
 </div>
 
 <div class="tabs">
-  <div class="tab on" data-t="perf">性能</div>
-  <div class="tab" data-t="auto">智能驾驶</div>
-  <div class="tab" data-t="batt">电池守护</div>
-  <div class="tab" data-t="app">应用管理</div>
-  <div class="tab" data-t="rule">应用策略</div>
-  <div class="tab" data-t="adv">高级</div>
-  <div class="tab" data-t="guard">防护</div>
-  <div class="tab" data-t="tool">工具</div>
-  <div class="tab" data-t="live">实时监控</div>
+  <div class="tab on" data-t="perf">Performance</div>
+  <div class="tab" data-t="auto">AutoPilot</div>
+  <div class="tab" data-t="batt">Battery</div>
+  <div class="tab" data-t="app">Apps</div>
+  <div class="tab" data-t="rule">App Rules</div>
+  <div class="tab" data-t="adv">Advanced</div>
+  <div class="tab" data-t="guard">Protection</div>
+  <div class="tab" data-t="tool">Tools</div>
+  <div class="tab" data-t="live">Live</div>
 </div>
 
 <div class="pane on" id="p-perf">
   <div class="card">
-    <h2>性能预设</h2>
+    <h2>Performance Presets</h2>
     <div class="grid" id="profGrid">
-      <div class="prof" data-p="powersave"><div class="pname">省电</div><div class="pdesc">降频优先、低读写压力，最大化续航与待机</div></div>
-      <div class="prof" data-p="balanced"><div class="pname">均衡</div><div class="pdesc">日常默认，性能与功耗折中，稳定省心</div></div>
-      <div class="prof" data-p="performance"><div class="pname">性能</div><div class="pdesc">满频调度、IO 低延迟，应用响应更快</div></div>
-      <div class="prof" data-p="gaming"><div class="pname">游戏</div><div class="pdesc">CPU+GPU 极限调度，帧率优先、发热偏高</div></div>
+      <div class="prof" data-p="powersave"><div class="pname">Power Save</div><div class="pdesc">Downclock first, low I/O pressure, maximum battery life and standby</div></div>
+      <div class="prof" data-p="balanced"><div class="pname">Balanced</div><div class="pdesc">Everyday default: balances performance and power draw</div></div>
+      <div class="prof" data-p="performance"><div class="pname">Performance</div><div class="pdesc">Full-speed scheduling and low-latency I/O for snappier apps</div></div>
+      <div class="prof" data-p="gaming"><div class="pname">Gaming</div><div class="pdesc">Maximum CPU+GPU scheduling: frame rate first, runs hotter</div></div>
     </div>
   </div>
 
   <div class="card">
-    <h2>调优开关</h2>
-    <div class="row"><div><div class="t">CPU 调度器</div><div class="d">按预设切换 scaling_governor</div></div><div class="sw"><input type="checkbox" data-k="CPU_GOV"><i></i></div></div>
-    <div class="row"><div><div class="t">GPU 调频</div><div class="d">Adreno/Mali 频率档位与调速器</div></div><div class="sw"><input type="checkbox" data-k="GPU_TUNE"><i></i></div></div>
-    <div class="row"><div><div class="t">CPU 频率上下限</div><div class="d">按预设限制 scaling_max_freq / scaling_min_freq</div></div><div class="sw"><input type="checkbox" data-k="CPU_FREQ"><i></i></div></div>
-    <div class="row"><div><div class="t">全核在线</div><div class="d">唤醒被离线的小核，避免卡顿掉帧</div></div><div class="sw"><input type="checkbox" data-k="CPU_PIN"><i></i></div></div>
-    <div class="row"><div><div class="t">IO 调度器</div><div class="d">按预设切换块设备调度算法</div></div><div class="sw"><input type="checkbox" data-k="IO_SCHED"><i></i></div></div>
-    <div class="row"><div><div class="t">预读与队列</div><div class="d">调整 read_ahead_kb 与 nr_requests</div></div><div class="sw"><input type="checkbox" data-k="READ_AHEAD"><i></i></div></div>
-    <div class="row"><div><div class="t">VM 内存调优</div><div class="d">swappiness、脏页回写与缓存压力</div></div><div class="sw"><input type="checkbox" data-k="VM_TUNE"><i></i></div></div>
-    <div class="row"><div><div class="t">网络加速</div><div class="d">启用 BBR、增大收发缓冲、TCP Fast Open</div></div><div class="sw"><input type="checkbox" data-k="NET_TUNE"><i></i></div></div>
-    <div class="row"><div><div class="t">DNS 优化</div><div class="d">按预设切换 DNS，性能档启用加密 DNS</div></div><div class="sw"><input type="checkbox" data-k="DNS_TUNE"><i></i></div></div>
-    <div class="row"><div><div class="t">ZRAM 压缩算法</div><div class="d">优先切换 zstd / lz4，提升压缩比与速度</div></div><div class="sw"><input type="checkbox" data-k="ZRAM_TUNE"><i></i></div></div>
-    <div class="row"><div><div class="t">LMK 内存回收</div><div class="d">按内存容量分档设置 minfree 与水位</div></div><div class="sw"><input type="checkbox" data-k="LMK_TUNE"><i></i></div></div>
-    <div class="row"><div><div class="t">ZRAM 大小</div><div class="d">未启用 swap 时按内存 75% 建立，需重启生效</div></div><div class="sw"><input type="checkbox" data-k="ZRAM_SIZE"><i></i></div></div>
-    <div class="row"><div><div class="t">LMK 内存回收</div><div class="d">按内存容量分档设置 minfree 与水位</div></div><div class="sw"><input type="checkbox" data-k="LMK_TUNE"><i></i></div></div>
-    <div class="row"><div><div class="t">ZRAM 大小</div><div class="d">未启用 swap 时按内存 75% 建立，需重启生效</div></div><div class="sw"><input type="checkbox" data-k="ZRAM_SIZE"><i></i></div></div>
-    <div class="row"><div><div class="t">温控解锁</div><div class="d">关闭 thermal_zone 与 msm_thermal，更稳但更热</div></div><div class="sw"><input type="checkbox" data-k="THERMAL_OPEN"><i></i></div></div>
-    <div class="row" id="zoneRow" style="display:none"><div><div class="t">解锁范围</div><div class="d">选择要关闭的温控区，未选的保持启用</div></div><div class="pill b" id="zoneBtn">cpu,gpu</div></div>
-    <div class="row"><div><div class="t">SELinux 宽容模式</div><div class="d">降低安全强度，仅供调试，勿长期开启</div></div><div class="sw"><input type="checkbox" data-k="SELINUX_PERM"><i></i></div></div>
-    <div class="row"><div><div class="t">关闭 IPv6</div><div class="d">部分网络环境下可减少解析延迟</div></div><div class="sw"><input type="checkbox" data-k="IPV6_OFF"><i></i></div></div>
-    <div class="row"><div><div class="t">动画加速</div><div class="d">过渡动画缩放设为 0.5x，观感更跟手</div></div><div class="sw"><input type="checkbox" data-k="ANIM_FAST"><i></i></div></div>
-    <div class="row"><div><div class="t">内核日志静默</div><div class="d">降低 printk 输出，减少日志写入开销</div></div><div class="sw"><input type="checkbox" data-k="PRINTK_OFF"><i></i></div></div>
-    <div class="row"><div><div class="t">开机自动 TRIM</div><div class="d">启动后自动执行 fstrim，保持闪存性能</div></div><div class="sw"><input type="checkbox" data-k="FSTRIM_BOOT"><i></i></div></div>
-    <div class="row"><div><div class="t">启动日志抓取</div><div class="d">保存最近 5 次开机 dmesg，便于排查</div></div><div class="sw"><input type="checkbox" data-k="LOG_CAPTURE"><i></i></div></div>
+    <h2>Tuning Options</h2>
+    <div class="row"><div><div class="t">CPU Governor</div><div class="d">Switch scaling_governor per preset</div></div><div class="sw"><input type="checkbox" data-k="CPU_GOV"><i></i></div></div>
+    <div class="row"><div><div class="t">GPU Frequency Scaling</div><div class="d">Adreno/Mali frequency steps and governor</div></div><div class="sw"><input type="checkbox" data-k="GPU_TUNE"><i></i></div></div>
+    <div class="row"><div><div class="t">CPU Frequency Limits</div><div class="d">Limit scaling_max_freq / scaling_min_freq per preset</div></div><div class="sw"><input type="checkbox" data-k="CPU_FREQ"><i></i></div></div>
+    <div class="row"><div><div class="t">All Cores Online</div><div class="d">Wake offlined little cores to avoid stutter and dropped frames</div></div><div class="sw"><input type="checkbox" data-k="CPU_PIN"><i></i></div></div>
+    <div class="row"><div><div class="t">I/O Scheduler</div><div class="d">Switch the block device scheduler per preset</div></div><div class="sw"><input type="checkbox" data-k="IO_SCHED"><i></i></div></div>
+    <div class="row"><div><div class="t">Read-ahead &amp; Queue</div><div class="d">Adjust read_ahead_kb and nr_requests</div></div><div class="sw"><input type="checkbox" data-k="READ_AHEAD"><i></i></div></div>
+    <div class="row"><div><div class="t">VM Memory Tuning</div><div class="d">swappiness, dirty page writeback and cache pressure</div></div><div class="sw"><input type="checkbox" data-k="VM_TUNE"><i></i></div></div>
+    <div class="row"><div><div class="t">Network Boost</div><div class="d">Enable BBR, larger send/receive buffers, TCP Fast Open</div></div><div class="sw"><input type="checkbox" data-k="NET_TUNE"><i></i></div></div>
+    <div class="row"><div><div class="t">DNS Optimization</div><div class="d">Switch DNS per preset; the Performance preset enables encrypted DNS</div></div><div class="sw"><input type="checkbox" data-k="DNS_TUNE"><i></i></div></div>
+    <div class="row"><div><div class="t">ZRAM Compression Algorithm</div><div class="d">Prefer zstd / lz4 for better compression ratio and speed</div></div><div class="sw"><input type="checkbox" data-k="ZRAM_TUNE"><i></i></div></div>
+    <div class="row"><div><div class="t">LMK Memory Reclaim</div><div class="d">Set minfree and watermarks by RAM size tier</div></div><div class="sw"><input type="checkbox" data-k="LMK_TUNE"><i></i></div></div>
+    <div class="row"><div><div class="t">ZRAM Size</div><div class="d">Created at 75% of RAM if swap is not enabled; requires a reboot</div></div><div class="sw"><input type="checkbox" data-k="ZRAM_SIZE"><i></i></div></div>
+    <div class="row"><div><div class="t">LMK Memory Reclaim</div><div class="d">Set minfree and watermarks by RAM size tier</div></div><div class="sw"><input type="checkbox" data-k="LMK_TUNE"><i></i></div></div>
+    <div class="row"><div><div class="t">ZRAM Size</div><div class="d">Created at 75% of RAM if swap is not enabled; requires a reboot</div></div><div class="sw"><input type="checkbox" data-k="ZRAM_SIZE"><i></i></div></div>
+    <div class="row"><div><div class="t">Thermal Unlock</div><div class="d">Disables thermal_zone and msm_thermal: steadier performance but hotter</div></div><div class="sw"><input type="checkbox" data-k="THERMAL_OPEN"><i></i></div></div>
+    <div class="row" id="zoneRow" style="display:none"><div><div class="t">Unlock Scope</div><div class="d">Choose which thermal zones to disable; unselected zones stay enabled</div></div><div class="pill b" id="zoneBtn">cpu,gpu</div></div>
+    <div class="row"><div><div class="t">SELinux Permissive Mode</div><div class="d">Lowers security; for debugging only, do not leave on long term</div></div><div class="sw"><input type="checkbox" data-k="SELINUX_PERM"><i></i></div></div>
+    <div class="row"><div><div class="t">Disable IPv6</div><div class="d">May reduce resolution latency on some networks</div></div><div class="sw"><input type="checkbox" data-k="IPV6_OFF"><i></i></div></div>
+    <div class="row"><div><div class="t">Faster Animations</div><div class="d">Sets transition animation scale to 0.5x for a snappier feel</div></div><div class="sw"><input type="checkbox" data-k="ANIM_FAST"><i></i></div></div>
+    <div class="row"><div><div class="t">Quiet Kernel Log</div><div class="d">Reduces printk output to cut log write overhead</div></div><div class="sw"><input type="checkbox" data-k="PRINTK_OFF"><i></i></div></div>
+    <div class="row"><div><div class="t">Auto TRIM on Boot</div><div class="d">Runs fstrim after boot to keep flash performance up</div></div><div class="sw"><input type="checkbox" data-k="FSTRIM_BOOT"><i></i></div></div>
+    <div class="row"><div><div class="t">Boot Log Capture</div><div class="d">Saves dmesg from the last 5 boots for troubleshooting</div></div><div class="sw"><input type="checkbox" data-k="LOG_CAPTURE"><i></i></div></div>
   </div>
 
   <div class="card">
-    <h2>操作</h2>
+    <h2>Actions</h2>
     <div class="btns">
-      <button class="btn p" id="bApply">应用当前配置</button>
-      <button class="btn g" id="bTrim">立即 TRIM</button>
-      <button class="btn" id="bRefresh">刷新状态</button>
-      <button class="btn r" id="bRevert">回滚全部</button>
+      <button class="btn p" id="bApply">Apply Current Config</button>
+      <button class="btn g" id="bTrim">TRIM Now</button>
+      <button class="btn" id="bRefresh">Refresh Status</button>
+      <button class="btn r" id="bRevert">Revert All</button>
     </div>
   </div>
 </div>
 
 <div class="pane" id="p-auto">
   <div class="card">
-    <h2>智能驾驶 AutoPilot</h2>
+    <h2>AutoPilot</h2>
     <div class="row">
-      <div><div class="t"><span class="badge" id="apBadge"></span>启用智能驾驶</div><div class="d">根据温度 / 息屏 / 充电状态自动切换预设</div></div>
+      <div><div class="t"><span class="badge" id="apBadge"></span>Enable AutoPilot</div><div class="d">Automatically switch presets based on temperature, screen-off and charging state</div></div>
       <div class="sw"><input type="checkbox" id="apOn"><i></i></div>
     </div>
-    <div class="field"><label>基准预设<div class="hint">正常使用时的档位</div></label>
-      <select id="apBase"><option value="powersave">省电</option><option value="balanced">均衡</option><option value="performance">性能</option><option value="gaming">游戏</option></select>
+    <div class="field"><label>Base Preset<div class="hint">Preset used during normal use</div></label>
+      <select id="apBase"><option value="powersave">Power Save</option><option value="balanced">Balanced</option><option value="performance">Performance</option><option value="gaming">Gaming</option></select>
     </div>
-    <div class="field"><label>降温预设<div class="hint">过热或息屏时切换到</div></label>
-      <select id="apCool"><option value="powersave">省电</option><option value="balanced">均衡</option></select>
+    <div class="field"><label>Cooldown Preset<div class="hint">Switched to when overheating or the screen is off</div></label>
+      <select id="apCool"><option value="powersave">Power Save</option><option value="balanced">Balanced</option></select>
     </div>
-    <div class="field"><label>过热阈值<div class="hint">超过该温度立即降温</div></label>
+    <div class="field"><label>Overheat Threshold<div class="hint">Cool down immediately above this temperature</div></label>
       <input type="range" id="apHot" min="35" max="70" step="1"><span class="val" id="apHotV"></span>
     </div>
-    <div class="field"><label>息屏自动省电<div class="hint">屏幕关闭时切换到降温预设</div></label>
+    <div class="field"><label>Power Save on Screen Off<div class="hint">Switch to the cooldown preset when the screen turns off</div></label>
       <div class="sw"><input type="checkbox" id="apScreen"><i></i></div>
     </div>
-    <div class="field"><label>充电时提升性能<div class="hint">边充边玩自动上性能档</div></label>
+    <div class="field"><label>Boost While Charging<div class="hint">Automatically use the Performance preset when playing while charging</div></label>
       <div class="sw"><input type="checkbox" id="apCharge"><i></i></div>
     </div>
-    <div class="field"><label>省电模式联动<div class="hint">系统开启省电模式时自动切省电档</div></label>
+    <div class="field"><label>Battery Saver Link<div class="hint">Switch to Power Save when the system battery saver is on</div></label>
       <div class="sw"><input type="checkbox" id="apLowPower"><i></i></div>
     </div>
-    <div class="field"><label>定时切换<div class="hint">在指定时间段内使用固定预设，跨天区间也支持</div></label>
+    <div class="field"><label>Scheduled Switch<div class="hint">Use a fixed preset during a set time window; overnight ranges are supported</div></label>
       <div class="sw"><input type="checkbox" id="apWinOn"><i></i></div>
     </div>
-    <div class="field"><label>时间段<div class="hint">格式 HHMM-HHMM，如 2300-0700</div></label>
+    <div class="field"><label>Time Window<div class="hint">Format HHMM-HHMM, e.g. 2300-0700</div></label>
       <input type="text" id="apWin" placeholder="2300-0700">
     </div>
-    <div class="field"><label>时间段预设</label>
+    <div class="field"><label>Window Preset</label>
       <select id="apWinProf">
-        <option value="powersave">省电</option>
-        <option value="balanced">均衡</option>
-        <option value="performance">性能</option>
-        <option value="gaming">游戏</option>
+        <option value="powersave">Power Save</option>
+        <option value="balanced">Balanced</option>
+        <option value="performance">Performance</option>
+        <option value="gaming">Gaming</option>
       </select>
     </div>
     <div class="btns" style="margin-top:12px">
-      <button class="btn p" id="apSave">保存并应用</button>
-      <button class="btn" id="apStop">停止</button>
+      <button class="btn p" id="apSave">Save &amp; Apply</button>
+      <button class="btn" id="apStop">Stop</button>
     </div>
   </div>
   <div class="card">
-    <h2>调度日志</h2>
-    <pre id="apLog">暂无记录</pre>
-    <div class="btns" style="margin-top:10px"><button class="btn s" id="apReload">刷新日志</button></div>
+    <h2>Scheduler Log</h2>
+    <pre id="apLog">No records yet</pre>
+    <div class="btns" style="margin-top:10px"><button class="btn s" id="apReload">Refresh Log</button></div>
   </div>
 </div>
 
 <div class="pane" id="p-batt">
   <div class="card">
-    <h2>电池守护 BatteryGuard</h2>
+    <h2>Battery Guard</h2>
     <div class="row">
-      <div><div class="t"><span class="badge" id="bgBadge"></span>启用充电上限</div><div class="d">达到上限自动断电，低于阈值自动恢复，显著延缓电池老化</div></div>
+      <div><div class="t"><span class="badge" id="bgBadge"></span>Enable Charge Limit</div><div class="d">Stops charging at the limit and resumes below the threshold, significantly slowing battery aging</div></div>
       <div class="sw"><input type="checkbox" id="bgOn"><i></i></div>
     </div>
-    <div class="field"><label>充电上限<div class="hint">建议 80%，可延长循环寿命</div></label>
+    <div class="field"><label>Charge Limit<div class="hint">80% recommended; extends cycle life</div></label>
       <input type="range" id="bgLimit" min="60" max="100" step="5"><span class="val" id="bgLimitV"></span>
     </div>
     <div class="stats" style="margin-top:12px">
-      <div class="st"><div class="sk">当前电量</div><div class="sv" id="battNow">-</div></div>
-      <div class="st"><div class="sk">充电状态</div><div class="sv" id="battSt">-</div></div>
-      <div class="st"><div class="sk">控制节点</div><div class="sv" id="battNode" style="font-size:11px">-</div></div>
+      <div class="st"><div class="sk">Battery Level</div><div class="sv" id="battNow">-</div></div>
+      <div class="st"><div class="sk">Charging State</div><div class="sv" id="battSt">-</div></div>
+      <div class="st"><div class="sk">Control Node</div><div class="sv" id="battNode" style="font-size:11px">-</div></div>
     </div>
     <div class="btns" style="margin-top:12px">
-      <button class="btn p" id="bgSave">保存并应用</button>
-      <button class="btn" id="bgStop">停止并恢复充电</button>
+      <button class="btn p" id="bgSave">Save &amp; Apply</button>
+      <button class="btn" id="bgStop">Stop &amp; Resume Charging</button>
     </div>
   </div>
 </div>
 
 <div class="pane" id="p-app">
   <div class="card">
-    <h2>应用待机管理</h2>
+    <h2>App Standby Management</h2>
     <div class="muted" style="margin-bottom:10px">
-      App Standby Bucket 控制后台调度频率。rare 省电但推送可能延迟；白名单应用不受影响。
+      App Standby Bucket controls background scheduling frequency. rare saves power but push notifications may be delayed; whitelisted apps are not affected.
     </div>
     <div class="btns">
-      <button class="btn p" id="appOpt">一键优化全部</button>
-      <button class="btn" id="appRest">恢复默认</button>
-      <button class="btn" id="appHib">休眠后台</button>
-      <button class="btn" id="appReload">刷新列表</button>
+      <button class="btn p" id="appOpt">Optimize All</button>
+      <button class="btn" id="appRest">Restore Defaults</button>
+      <button class="btn" id="appHib">Hibernate Background</button>
+      <button class="btn" id="appReload">Refresh List</button>
     </div>
     <div style="margin-top:12px">
-      <input type="text" id="appFilter" placeholder="搜索应用名或包名…" style="width:100%">
+      <input type="text" id="appFilter" placeholder="Search app name or package…" style="width:100%">
     </div>
   </div>
   <div class="card">
-    <h2>已安装应用 <span class="muted" id="appCount"></span></h2>
-    <div class="applist" id="appList"><div class="muted">点击「刷新列表」加载</div></div>
+    <h2>Installed Apps <span class="muted" id="appCount"></span></h2>
+    <div class="applist" id="appList"><div class="muted">Tap “Refresh List” to load</div></div>
   </div>
 </div>
 
 <div class="pane" id="p-rule">
   <div class="card">
-    <h2>应用性能策略 AppWatch</h2>
+    <h2>Per-App Performance Rules (AppWatch)</h2>
     <div class="row">
-      <div><div class="t"><span class="badge" id="awBadge"></span>启用前台应用追踪</div><div class="d">检测当前前台应用，自动切换到指定预设；无规则时回到基准档</div></div>
+      <div><div class="t"><span class="badge" id="awBadge"></span>Enable Foreground App Tracking</div><div class="d">Detect the foreground app and switch to its assigned preset; falls back to the base preset when no rule matches</div></div>
       <div class="sw"><input type="checkbox" id="awOn"><i></i></div>
     </div>
-    <div class="field"><label>基准预设<div class="hint">没有匹配规则时使用</div></label>
-      <select id="awBase"><option value="powersave">省电</option><option value="balanced">均衡</option><option value="performance">性能</option><option value="gaming">游戏</option></select>
+    <div class="field"><label>Base Preset<div class="hint">Used when no rule matches</div></label>
+      <select id="awBase"><option value="powersave">Power Save</option><option value="balanced">Balanced</option><option value="performance">Performance</option><option value="gaming">Gaming</option></select>
     </div>
     <div class="btns" style="margin-top:12px">
-      <button class="btn p" id="awSave">保存并应用</button>
-      <button class="btn" id="awStop">停止</button>
+      <button class="btn p" id="awSave">Save &amp; Apply</button>
+      <button class="btn" id="awStop">Stop</button>
     </div>
-    <div class="muted" style="margin-top:10px" id="awFg">当前前台：-</div>
+    <div class="muted" style="margin-top:10px" id="awFg">Foreground: -</div>
   </div>
 
   <div class="card">
-    <h2>添加规则</h2>
-    <div class="muted" style="margin-bottom:10px">从已安装应用中选择，指定该应用运行时使用的预设</div>
+    <h2>Add Rule</h2>
+    <div class="muted" style="margin-bottom:10px">Pick an installed app and choose the preset to use while it is running</div>
     <div class="field">
-      <select id="rulePkg" style="flex:1"><option value="">加载中…</option></select>
+      <select id="rulePkg" style="flex:1"><option value="">Loading…</option></select>
     </div>
     <div class="field">
       <select id="ruleProf" style="flex:1">
-        <option value="powersave">省电</option>
-        <option value="balanced">均衡</option>
-        <option value="performance">性能</option>
-        <option value="gaming">游戏</option>
+        <option value="powersave">Power Save</option>
+        <option value="balanced">Balanced</option>
+        <option value="performance">Performance</option>
+        <option value="gaming">Gaming</option>
       </select>
     </div>
     <div class="btns" style="margin-top:12px">
-      <button class="btn p" id="ruleAdd">添加规则</button>
-      <button class="btn" id="ruleReload">刷新列表</button>
+      <button class="btn p" id="ruleAdd">Add Rule</button>
+      <button class="btn" id="ruleReload">Refresh List</button>
     </div>
   </div>
 
   <div class="card">
-    <h2>已有规则 <span class="muted" id="ruleCount"></span></h2>
-    <div class="applist" id="ruleList"><div class="muted">暂无规则</div></div>
+    <h2>Existing Rules <span class="muted" id="ruleCount"></span></h2>
+    <div class="applist" id="ruleList"><div class="muted">No rules yet</div></div>
   </div>
 </div>
 
 <div class="pane" id="p-adv">
   <div class="card">
-    <h2>显示调优</h2>
+    <h2>Display Tuning</h2>
     <div class="row">
-      <div><div class="t">启用显示调优</div><div class="d">按预设调整屏幕刷新率与触控采样率</div></div>
+      <div><div class="t">Enable Display Tuning</div><div class="d">Adjust screen refresh rate and touch sampling rate per preset</div></div>
       <div class="sw"><input type="checkbox" data-k="DISP_TUNE"><i></i></div>
     </div>
     <div class="stats" style="margin-top:12px">
-      <div class="st"><div class="sk">峰值刷新率</div><div class="sv" id="dHz">-</div></div>
-      <div class="st"><div class="sk">最小刷新率</div><div class="sv" id="dMinHz">-</div></div>
-      <div class="st"><div class="sk">触控节点</div><div class="sv" id="dNodes">-</div></div>
+      <div class="st"><div class="sk">Peak Refresh Rate</div><div class="sv" id="dHz">-</div></div>
+      <div class="st"><div class="sk">Min Refresh Rate</div><div class="sv" id="dMinHz">-</div></div>
+      <div class="st"><div class="sk">Touch Nodes</div><div class="sv" id="dNodes">-</div></div>
     </div>
     <div class="btns" style="margin-top:12px">
-      <button class="btn" id="dRefresh">应用刷新率</button>
-      <button class="btn" id="dTouch">应用触控</button>
+      <button class="btn" id="dRefresh">Apply Refresh Rate</button>
+      <button class="btn" id="dTouch">Apply Touch</button>
     </div>
   </div>
 
   <div class="card">
-    <h2>自定义内核参数</h2>
+    <h2>Custom Kernel Parameters</h2>
     <div class="muted" style="margin-bottom:10px">
-      直接读写 /sys 与 /proc 节点，支持任意参数。所有修改前自动备份原值，可一键还原。
+      Read and write /sys and /proc nodes directly; any parameter is supported. Original values are backed up before every change and can be restored in one tap.
     </div>
     <div class="field"><input type="text" id="cPath" placeholder="/proc/sys/vm/swappiness" style="flex:1"></div>
-    <div class="field"><input type="text" id="cVal" placeholder="期望值，如 100" style="flex:1"></div>
+    <div class="field"><input type="text" id="cVal" placeholder="Desired value, e.g. 100" style="flex:1"></div>
     <div class="btns">
-      <button class="btn p" id="cAdd">添加</button>
-      <button class="btn" id="cApplyAll">应用全部</button>
-      <button class="btn g" id="cRevertAll">还原全部</button>
+      <button class="btn p" id="cAdd">Add</button>
+      <button class="btn" id="cApplyAll">Apply All</button>
+      <button class="btn g" id="cRevertAll">Restore All</button>
     </div>
   </div>
 
   <div class="card">
-    <h2>参数列表 <span class="muted" id="cCount"></span></h2>
-    <div class="applist" id="cList"><div class="muted">暂无自定义参数</div></div>
+    <h2>Parameter List <span class="muted" id="cCount"></span></h2>
+    <div class="applist" id="cList"><div class="muted">No custom parameters yet</div></div>
   </div>
 
   <div class="card">
-    <h2>initrc 常驻服务</h2>
+    <h2>initrc Persistent Services</h2>
     <div class="muted">
-      已注入 <code>initrc/KernelSU-Tuner.rc</code>，由 init 在 late_start 阶段拉起，比 service.sh 更早生效。<br>
-      · <b>KernelSU-Tuner_boot</b>：开机极早期应用预设<br>
-      · <b>KernelSU-Tuner_watch</b>：boot_completed 后启动应用追踪<br>
-      修改配置后可执行 <code>ksud initrc refresh</code> 手动刷新（下次开机生效）。
+      Injected <code>initrc/KernelSU-Tuner.rc</code>, started by init at the late_start stage, so it takes effect earlier than service.sh.<br>
+      · <b>KernelSU-Tuner_boot</b>: applies the preset very early at boot<br>
+      · <b>KernelSU-Tuner_watch</b>: starts app tracking after boot_completed<br>
+      After changing the config, run <code>ksud initrc refresh</code> to refresh manually (takes effect on next boot).
     </div>
     <div class="stats" style="margin-top:10px">
-      <div class="st"><div class="sk">注入状态</div><div class="sv" id="initrcSt">-</div></div>
+      <div class="st"><div class="sk">Injection Status</div><div class="sv" id="initrcSt">-</div></div>
     </div>
   </div>
 </div>
 
 <div class="pane" id="p-guard">
   <div class="card">
-    <h2>防格机防护 <span class="muted" id="gsState"></span></h2>
+    <h2>Anti-Wipe Protection <span class="muted" id="gsState"></span></h2>
     <div class="muted" style="margin-bottom:12px">
-      监控正在运行的进程与开机脚本，发现删库/格式化类操作时按所选模式处理。<br>
-      <b>增强模式</b>：检测到立即终止进程。<br>
-      <b>普通模式</b>：先弹窗询问，等待你选择。<br>
-      <b>不防护</b>：只记录，不干预。
+      Monitors running processes and boot scripts, and handles wipe/format-style operations according to the selected mode.<br>
+      <b>Enhanced Mode</b>: kills the process immediately on detection.<br>
+      <b>Normal Mode</b>: asks via popup first and waits for your choice.<br>
+      <b>No Protection</b>: logs only, no intervention.
     </div>
     <div class="row" id="gsRow1" data-m="1">
-      <div><div class="t">增强模式</div><div class="d">检测到格机命令直接 kill -9，不询问</div></div>
-      <span class="pill b" id="gsPick1">选择</span>
+      <div><div class="t">Enhanced Mode</div><div class="d">Kills wipe commands with kill -9 on detection, no confirmation</div></div>
+      <span class="pill b" id="gsPick1">Select</span>
     </div>
     <div class="row" id="gsRow2" data-m="2">
-      <div><div class="t">普通模式</div><div class="d">检测到先挂起并弹窗，由你决定是否终止</div></div>
-      <span class="pill b" id="gsPick2">选择</span>
+      <div><div class="t">Normal Mode</div><div class="d">Suspends the process and shows a popup; you decide whether to kill it</div></div>
+      <span class="pill b" id="gsPick2">Select</span>
     </div>
     <div class="row" id="gsRow3" data-m="3">
-      <div><div class="t">不防护</div><div class="d">关闭监控，仅保留日志</div></div>
-      <span class="pill b" id="gsPick3">选择</span>
+      <div><div class="t">No Protection</div><div class="d">Monitoring off; logs only</div></div>
+      <span class="pill b" id="gsPick3">Select</span>
     </div>
   </div>
 
   <div class="card" id="gsAlert" style="display:none;border-color:#d84b4b">
-    <h2 style="color:#ff9c9c">⚠ 检测到危险操作</h2>
+    <h2 style="color:#ff9c9c">⚠ Dangerous operation detected</h2>
     <pre id="gsCmd" style="max-height:120px"></pre>
     <div class="btns" style="margin-top:12px">
-      <button class="btn r" id="gsKill">终止该进程</button>
-      <button class="btn" id="gsAllow">放行并加白</button>
+      <button class="btn r" id="gsKill">Kill Process</button>
+      <button class="btn" id="gsAllow">Allow &amp; Whitelist</button>
     </div>
   </div>
 
   <div class="card">
-    <h2>拦截记录</h2>
-    <pre id="gsLog">暂无记录</pre>
+    <h2>Intercept Log</h2>
+    <pre id="gsLog">No records yet</pre>
     <div class="btns" style="margin-top:10px">
-      <button class="btn s" id="gsReload">刷新</button>
+      <button class="btn s" id="gsReload">Refresh</button>
     </div>
   </div>
 </div>
 
 <div class="pane" id="p-tool">
   <div class="card">
-    <h2>配置备份</h2>
+    <h2>Config Backup</h2>
     <div class="muted" style="margin-bottom:12px">
-      把当前选项、per-app 规则、自定义参数和白名单打包成一个 JSON 文件，存放在 /sdcard/KernelSU-Tuner-Backup。
+      Bundles the current options, per-app rules, custom parameters and whitelist into a single JSON file stored in /sdcard/KernelSU-Tuner-Backup.
     </div>
     <div class="btns">
-      <button class="btn p" id="bkExport">导出</button>
-      <button class="btn" id="bkList">列出文件</button>
+      <button class="btn p" id="bkExport">Export</button>
+      <button class="btn" id="bkList">List Files</button>
     </div>
-    <div class="field" style="margin-top:12px"><label>导入文件路径</label>
+    <div class="field" style="margin-top:12px"><label>Import File Path</label>
       <input type="text" id="bkPath" placeholder="/sdcard/KernelSU-Tuner-Backup/ksu-tuner-....json">
     </div>
     <div class="btns">
-      <button class="btn r" id="bkImport">导入</button>
+      <button class="btn r" id="bkImport">Import</button>
     </div>
     <pre id="bkOut" style="margin-top:10px">—</pre>
   </div>
 
   <div class="card">
-    <h2>自定义预设</h2>
+    <h2>Custom Presets</h2>
     <div class="muted" style="margin-bottom:12px">
-      在四个内置档基础上保存自己的方案，名字只能用字母、数字、下划线、连字符。
+      Save your own profile based on one of the four built-in presets. Names may only contain letters, digits, underscores and hyphens.
     </div>
-    <div class="field"><label>名称</label><input type="text" id="psName" placeholder="night"></div>
-    <div class="field"><label>基准档</label>
+    <div class="field"><label>Name</label><input type="text" id="psName" placeholder="night"></div>
+    <div class="field"><label>Base Preset</label>
       <select id="psBase">
-        <option value="powersave">省电</option>
-        <option value="balanced">均衡</option>
-        <option value="performance">性能</option>
-        <option value="gaming">游戏</option>
+        <option value="powersave">Power Save</option>
+        <option value="balanced">Balanced</option>
+        <option value="performance">Performance</option>
+        <option value="gaming">Gaming</option>
       </select>
     </div>
     <div class="btns">
-      <button class="btn p" id="psSave">保存</button>
-      <button class="btn" id="psList">刷新列表</button>
+      <button class="btn p" id="psSave">Save</button>
+      <button class="btn" id="psList">Refresh List</button>
     </div>
     <pre id="psOut" style="margin-top:10px">—</pre>
   </div>
 
   <div class="card">
-    <h2>应用级参数</h2>
+    <h2>Per-App Parameters</h2>
     <div class="muted" style="margin-bottom:12px">
-      指定应用在前台时写入特定内核节点。适合给单个游戏锁定频率上限。
+      Writes to specific kernel nodes while the chosen app is in the foreground. Handy for capping the frequency for a single game.
     </div>
-    <div class="field"><label>包名</label><input type="text" id="acPkg" placeholder="com.tencent.tmgp.sgame"></div>
-    <div class="field"><label>节点路径</label><input type="text" id="acPath" placeholder="/sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq"></div>
-    <div class="field"><label>值</label><input type="text" id="acVal" placeholder="1516800"></div>
+    <div class="field"><label>Package Name</label><input type="text" id="acPkg" placeholder="com.tencent.tmgp.sgame"></div>
+    <div class="field"><label>Node Path</label><input type="text" id="acPath" placeholder="/sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq"></div>
+    <div class="field"><label>Value</label><input type="text" id="acVal" placeholder="1516800"></div>
     <div class="btns">
-      <button class="btn p" id="acAdd">添加</button>
-      <button class="btn" id="acList">刷新列表</button>
+      <button class="btn p" id="acAdd">Add</button>
+      <button class="btn" id="acList">Refresh List</button>
     </div>
     <pre id="acOut" style="margin-top:10px">—</pre>
   </div>
 
   <div class="card">
-    <h2>内核扩展调优</h2>
+    <h2>Extended Kernel Tuning</h2>
     <div class="muted" style="margin-bottom:12px">
-      devfreq 总线频率、KSM 内存去重、THP 大页、schedtune 调度增强、TCP 缓冲、触控 boost、文件系统上限。全部默认关闭。
+      devfreq bus frequency, KSM memory deduplication, THP huge pages, schedtune scheduling boost, TCP buffers, touch boost and filesystem limits. All are off by default.
     </div>
     <div id="kxList"></div>
     <div class="btns">
-      <button class="btn" id="kxStatus">刷新</button>
-      <button class="btn" id="kxDev">查看 devfreq</button>
+      <button class="btn" id="kxStatus">Refresh</button>
+      <button class="btn" id="kxDev">View devfreq</button>
     </div>
     <pre id="kxOut" style="margin-top:10px">—</pre>
   </div>
 
   <div class="card">
-    <h2>守护进程</h2>
+    <h2>Daemon</h2>
     <div class="muted" style="margin-bottom:12px">
-      看门狗会周期性检查 AutoPilot、电池守护、应用监控和防格机是否还活着，掉线就重新拉起。
+      The watchdog periodically checks that AutoPilot, Battery Guard, app monitoring and Anti-Wipe protection are still alive, and restarts any that have stopped.
     </div>
     <div class="btns">
-      <button class="btn p" id="wdStart">启动</button>
-      <button class="btn r" id="wdStop">停止</button>
-      <button class="btn" id="wdStatus">状态</button>
-      <button class="btn" id="wdLog">日志</button>
+      <button class="btn p" id="wdStart">Start</button>
+      <button class="btn r" id="wdStop">Stop</button>
+      <button class="btn" id="wdStatus">Status</button>
+      <button class="btn" id="wdLog">Log</button>
     </div>
     <pre id="wdOut" style="margin-top:10px">—</pre>
   </div>
 
   <div class="card">
-    <h2>变更预览</h2>
+    <h2>Change Preview</h2>
     <div class="muted" style="margin-bottom:12px">
-      列出应用当前预设会改动哪些节点，不写入任何内容。
+      Lists which nodes the current preset would change, without writing anything.
     </div>
     <div class="btns">
-      <button class="btn" id="drRun">预览</button>
+      <button class="btn" id="drRun">Preview</button>
     </div>
     <pre id="drOut" style="margin-top:10px">—</pre>
   </div>
 </div>
 <div class="pane" id="p-live">
   <div class="card">
-    <h2>实时曲线</h2>
+    <h2>Live Chart</h2>
     <canvas id="chart" width="760" height="120"></canvas>
     <div class="btns" style="margin-top:10px">
-      <button class="btn p" id="liveStart">开始监控</button>
-      <button class="btn" id="liveStop">停止</button>
+      <button class="btn p" id="liveStart">Start Monitoring</button>
+      <button class="btn" id="liveStop">Stop</button>
     </div>
-    <div class="muted" style="margin-top:8px" id="liveInfo">蓝=温度  绿=CPU占用估算  黄=GPU频率</div>
+    <div class="muted" style="margin-top:8px" id="liveInfo">Blue = temperature   Green = estimated CPU load   Yellow = GPU frequency</div>
   </div>
   <div class="card">
-    <h2>实时状态</h2>
-    <div class="stats" id="stats"><div class="muted">点击「刷新状态」读取内核参数</div></div>
+    <h2>Live Status</h2>
+    <div class="stats" id="stats"><div class="muted">Tap “Refresh Status” to read kernel parameters</div></div>
   </div>
   <div class="card">
-    <h2>运行日志</h2>
-    <pre id="log">点击「刷新状态」加载日志</pre>
+    <h2>Run Log</h2>
+    <pre id="log">Tap “Refresh Status” to load the log</pre>
     <div class="btns" style="margin-top:10px">
-      <button class="btn s" id="bLog">重新加载</button>
-      <button class="btn s" id="bClearLog">清空日志</button>
+      <button class="btn s" id="bLog">Reload</button>
+      <button class="btn s" id="bClearLog">Clear Log</button>
     </div>
   </div>
 </div>
@@ -605,7 +605,7 @@ function fmtUp(sec) {
   const s = Math.floor(parseFloat(sec));
   if (isNaN(s)) return "-";
   const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
-  return (d ? d + "天" : "") + (h ? h + "小时" : "") + m + "分";
+  return (d ? d + "d " : "") + (h ? h + "h " : "") + m + "m";
 }
 
 let cfgMap = {};
@@ -613,7 +613,7 @@ let cfgMap = {};
 async function load() {
   if (busy) return;
   busy = true;
-  setTag("读取中…", "warn");
+  setTag("Loading…", "warn");
   const r = await sh("sh " + TUNER + " status");
   const m = {};
   r.stdout.split("\n").forEach(function (line) {
@@ -633,7 +633,7 @@ async function load() {
   const cores = pick(m, "LIVE_CORES", "?");
   document.getElementById("subInfo").textContent =
     "Android " + pick(m, "LIVE_ANDROID", "?") + " (API " + pick(m, "LIVE_SDK", "?") + ") · " +
-    pick(m, "LIVE_ABI", "?") + " · " + cores + " 核 · 内核 " + pick(m, "LIVE_KERNEL", "?");
+    pick(m, "LIVE_ABI", "?") + " · " + cores + " cores · Kernel " + pick(m, "LIVE_KERNEL", "?");
 
   document.getElementById("apOn").checked = pick(m, "CFG_AUTOPILOT", "0") === "1";
   document.getElementById("apBase").value = pick(m, "CFG_AUTO_BASE", "balanced");
@@ -663,13 +663,13 @@ async function load() {
   document.getElementById("awBase").value = pick(m, "CFG_WATCH_BASE", "balanced");
   document.getElementById("awBadge").className = "badge" + (pick(m, "LIVE_APPWATCH", "0") === "1" ? " on" : "");
   const fg = pick(m, "LIVE_FOREGROUND", "");
-  document.getElementById("awFg").textContent = "当前前台：" + (fg || "未知") +
-    " · 规则 " + pick(m, "LIVE_RULECOUNT", "0") + " 条";
+  document.getElementById("awFg").textContent = "Foreground: " + (fg || "unknown") +
+    " · Rules: " + pick(m, "LIVE_RULECOUNT", "0") + "";
 
   document.getElementById("dHz").textContent = pick(m, "DISP_HZ", "-") + " Hz";
   document.getElementById("dMinHz").textContent = pick(m, "DISP_MIN_HZ", "-") + " Hz";
-  document.getElementById("dNodes").textContent = pick(m, "DISP_TOUCH_NODES", "0") + " 个";
-  document.getElementById("initrcSt").textContent = pick(m, "LIVE_INITRC", "0") === "1" ? "已注入" : "未注入";
+  document.getElementById("dNodes").textContent = pick(m, "DISP_TOUCH_NODES", "0") + "";
+  document.getElementById("initrcSt").textContent = pick(m, "LIVE_INITRC", "0") === "1" ? "Injected" : "Not injected";
   gsSetActive(pick(m, "CFG_GUARD_MODE", "3"));
   if (pick(m, "CFG_GUARD_MODE", "3") === "2") gsCheckSignal();
   document.getElementById("cCount").textContent = "(" + pick(m, "LIVE_CUSTOMCOUNT", "0") + ")";
@@ -684,38 +684,38 @@ async function load() {
   const gMax = pick(m, "LIVE_GPUMAX", "-");
 
   const cells = [
-    ["当前预设", prof],
-    ["CPU 调度器", pick(m, "LIVE_GOVERNOR", "-")],
-    ["当前频率", fmtFreq(pick(m, "LIVE_CUR_FREQ", "0"))],
-    ["频率范围", fmtFreq(pick(m, "LIVE_MIN_FREQ", "0")) + " ~ " + fmtFreq(pick(m, "LIVE_MAX_FREQ", "0"))],
+    ["Current Preset", prof],
+    ["CPU Governor", pick(m, "LIVE_GOVERNOR", "-")],
+    ["Current Frequency", fmtFreq(pick(m, "LIVE_CUR_FREQ", "0"))],
+    ["Frequency Range", fmtFreq(pick(m, "LIVE_MIN_FREQ", "0")) + " ~ " + fmtFreq(pick(m, "LIVE_MAX_FREQ", "0"))],
     ["GPU", (gModel ? gModel + " " : "") + gFreq + " / " + gMax + " MHz"],
-    ["IO 调度器", pick(m, "LIVE_SCHEDULER", "-") + " (" + pick(m, "LIVE_BLOCK", "-") + ")"],
-    ["预读", pick(m, "LIVE_READAHEAD", "-") + " KB"],
-    ["拥塞控制", pick(m, "LIVE_CONGESTION", "-")],
+    ["I/O Scheduler", pick(m, "LIVE_SCHEDULER", "-") + " (" + pick(m, "LIVE_BLOCK", "-") + ")"],
+    ["Read-ahead", pick(m, "LIVE_READAHEAD", "-") + " KB"],
+    ["Congestion Control", pick(m, "LIVE_CONGESTION", "-")],
     ["SELinux", pick(m, "LIVE_SELINUX", "-")],
-    ["内存占用", memPct + "% (" + fmtBytes(memA) + " 可用)"],
+    ["Memory Usage", memPct + "% (" + fmtBytes(memA) + " available)"],
     ["ZRAM", pick(m, "LIVE_ZRAM_ALGO", "-") + " · " + fmtBytes(pick(m, "LIVE_ZRAM_SIZE", "0"))],
-    ["温度", tempC],
-    ["负载", pick(m, "LIVE_LOADAVG", "-")],
-    ["运行时长", fmtUp(pick(m, "LIVE_UPTIME", "0"))],
-    ["回滚点", pick(m, "LIVE_BACKUPS", "0") + " 项"],
-    ["上次应用", pick(m, "CFG_LAST_APPLY", "-")],
-    ["上次 TRIM", pick(m, "CFG_LAST_TRIM", "-")]
+    ["Temperature", tempC],
+    ["Load", pick(m, "LIVE_LOADAVG", "-")],
+    ["Uptime", fmtUp(pick(m, "LIVE_UPTIME", "0"))],
+    ["Rollback Points", pick(m, "LIVE_BACKUPS", "0") + " items"],
+    ["Last Applied", pick(m, "CFG_LAST_APPLY", "-")],
+    ["Last TRIM", pick(m, "CFG_LAST_TRIM", "-")]
   ];
   document.getElementById("stats").innerHTML = cells.map(function (c) {
     return '<div class="st"><div class="sk">' + esc(c[0]) + '</div><div class="sv">' + esc(c[1]) + '</div></div>';
   }).join("");
 
   const lr = await sh("tail -n 100 " + CFGD + "/tuner.log");
-  document.getElementById("log").textContent = lr.stdout.trim() || "暂无日志";
+  document.getElementById("log").textContent = lr.stdout.trim() || "No logs yet";
 
   const ar = await sh("tail -n 40 " + CFGD + "/autopilot.log");
-  document.getElementById("apLog").textContent = ar.stdout.trim() || "暂无记录";
+  document.getElementById("apLog").textContent = ar.stdout.trim() || "No records yet";
 
   const nr = await sh("sh " + BG + " node");
-  document.getElementById("battNode").textContent = nr.stdout.trim() || "不支持";
+  document.getElementById("battNode").textContent = nr.stdout.trim() || "Unsupported";
 
-  setTag("已就绪", "ok");
+  setTag("Ready", "ok");
   busy = false;
 }
 
@@ -725,9 +725,9 @@ async function saveKey(k, v) {
 
 async function apply() {
   const prof = document.querySelector(".prof.on").dataset.p;
-  setTag("应用中…", "warn");
+  setTag("Applying…", "warn");
   const r = await sh("sh " + TUNER + " apply " + prof);
-  toast(r.errno === 0 ? "已应用预设：" + prof : "应用失败");
+  toast(r.errno === 0 ? "Preset applied: " + prof : "Apply failed");
   await load();
 }
 
@@ -745,7 +745,7 @@ document.querySelectorAll(".prof").forEach(function (p) {
   p.addEventListener("click", function () {
     document.querySelectorAll(".prof").forEach(function (x) { x.classList.remove("on"); });
     p.classList.add("on");
-    toast("已选择：" + p.querySelector(".pname").textContent);
+    toast("Selected: " + p.querySelector(".pname").textContent);
   });
 });
 
@@ -756,7 +756,7 @@ document.querySelectorAll(".sw input[data-k]").forEach(function (inp) {
       const zr = document.getElementById("zoneRow");
       if (zr) zr.style.display = inp.checked ? "flex" : "none";
     }
-    toast(inp.checked ? "已开启" : "已关闭");
+    toast(inp.checked ? "Enabled" : "Disabled");
   });
 });
 
@@ -765,23 +765,23 @@ document.getElementById("bRefresh").addEventListener("click", load);
 document.getElementById("bLog").addEventListener("click", load);
 
 document.getElementById("bTrim").addEventListener("click", async function () {
-  setTag("TRIM 中…", "warn");
+  setTag("Running TRIM…", "warn");
   const r = await sh("sh " + TUNER + " trim");
-  toast((r.stdout || "TRIM 完成").trim().slice(0, 60));
-  setTag("已就绪", "ok");
+  toast((r.stdout || "TRIM complete").trim().slice(0, 60));
+  setTag("Ready", "ok");
 });
 
 document.getElementById("bRevert").addEventListener("click", async function () {
-  setTag("回滚中…", "warn");
+  setTag("Reverting…", "warn");
   await sh("sh " + TUNER + " revert");
-  toast("已回滚全部内核参数");
+  toast("All kernel parameters reverted");
   await load();
 });
 
 document.getElementById("bClearLog").addEventListener("click", async function () {
   await sh("sh " + TUNER + " clear-log");
-  document.getElementById("log").textContent = "暂无日志";
-  toast("日志已清空");
+  document.getElementById("log").textContent = "No logs yet";
+  toast("Log cleared");
 });
 
 document.getElementById("apHot").addEventListener("input", function () {
@@ -792,7 +792,7 @@ document.getElementById("bgLimit").addEventListener("input", function () {
 });
 
 document.getElementById("apSave").addEventListener("click", async function () {
-  setTag("保存中…", "warn");
+  setTag("Saving…", "warn");
   await saveKey("AUTO_BASE", document.getElementById("apBase").value);
   await saveKey("AUTO_COOL", document.getElementById("apCool").value);
   await saveKey("AUTO_TEMP_HIGH", String(num(document.getElementById("apHot").value, 45) * 1000));
@@ -803,7 +803,7 @@ document.getElementById("apSave").addEventListener("click", async function () {
   await saveKey("AUTO_WINDOW_ON", document.getElementById("apWinOn").checked ? "1" : "0");
   const wv = document.getElementById("apWin").value.trim();
   if (wv && !/^[0-9]{3,4}-[0-9]{3,4}$/.test(wv)) {
-    toast("时间段格式应为 HHMM-HHMM");
+    toast("Time window format must be HHMM-HHMM");
     return;
   }
   await saveKey("AUTO_WINDOW", wv || "2300-0700");
@@ -811,7 +811,7 @@ document.getElementById("apSave").addEventListener("click", async function () {
   const on = document.getElementById("apOn").checked;
   await saveKey("AUTOPILOT", on ? "1" : "0");
   await sh("sh " + AP + (on ? " start" : " stop"));
-  toast(on ? "智能驾驶已启动" : "智能驾驶已停止");
+  toast(on ? "AutoPilot started" : "AutoPilot stopped");
   await load();
 });
 
@@ -819,28 +819,28 @@ document.getElementById("apStop").addEventListener("click", async function () {
   await saveKey("AUTOPILOT", "0");
   await sh("sh " + AP + " stop");
   document.getElementById("apOn").checked = false;
-  toast("已停止");
+  toast("Stopped");
   await load();
 });
 
 document.getElementById("apReload").addEventListener("click", async function () {
   const ar = await sh("tail -n 40 " + CFGD + "/autopilot.log");
-  document.getElementById("apLog").textContent = ar.stdout.trim() || "暂无记录";
-  toast("已刷新");
+  document.getElementById("apLog").textContent = ar.stdout.trim() || "No records yet";
+  toast("Refreshed");
 });
 
 document.getElementById("bgSave").addEventListener("click", async function () {
-  setTag("保存中…", "warn");
+  setTag("Saving…", "warn");
   await saveKey("CHARGE_LIMIT", document.getElementById("bgLimit").value);
   const on = document.getElementById("bgOn").checked;
   await saveKey("BATT_GUARD", on ? "1" : "0");
   const r = await sh("sh " + BG + (on ? " start" : " stop"));
   if (on && r.stdout.indexOf("unsupported") >= 0) {
-    toast("设备不支持充电控制");
+    toast("Device does not support charge control");
     document.getElementById("bgOn").checked = false;
     await saveKey("BATT_GUARD", "0");
   } else {
-    toast(on ? "电池守护已启动" : "已停止");
+    toast(on ? "Battery Guard started" : "Stopped");
   }
   await load();
 });
@@ -849,14 +849,14 @@ document.getElementById("bgStop").addEventListener("click", async function () {
   await saveKey("BATT_GUARD", "0");
   await sh("sh " + BG + " stop");
   document.getElementById("bgOn").checked = false;
-  toast("已停止并恢复充电");
+  toast("Stopped and charging resumed");
   await load();
 });
 
 let appData = [];
 
 async function loadApps() {
-  document.getElementById("appList").innerHTML = '<div class="muted">读取中…</div>';
+  document.getElementById("appList").innerHTML = '<div class="muted">Loading…</div>';
   const r = await sh("sh " + AC + " list");
   appData = [];
   r.stdout.split("\n").forEach(function (line) {
@@ -880,17 +880,17 @@ function renderApps() {
   const list = appData.filter(function (a) { return !q || a.pkg.toLowerCase().indexOf(q) >= 0; });
   document.getElementById("appCount").textContent = "(" + list.length + "/" + appData.length + ")";
   if (!list.length) {
-    document.getElementById("appList").innerHTML = '<div class="muted">无匹配应用</div>';
+    document.getElementById("appList").innerHTML = '<div class="muted">No matching apps</div>';
     return;
   }
   document.getElementById("appList").innerHTML = list.map(function (a, i) {
     const idx = appData.indexOf(a);
     return '<div class="app">' +
       '<div class="n">' + esc(a.pkg) +
-      '<div class="pk">' + (a.wl ? "白名单保护" : "受管理") + '</div></div>' +
+      '<div class="pk">' + (a.wl ? "Whitelisted" : "Managed") + '</div></div>' +
       '<span class="pill ' + levelClass(a.level) + '">' + esc(a.level) + '</span>' +
-      '<span class="pill ' + (a.wl ? "w" : "") + '" data-act="wl" data-i="' + idx + '">' + (a.wl ? "移出" : "保护") + '</span>' +
-      '<span class="pill b" data-act="cyc" data-i="' + idx + '">切换</span>' +
+      '<span class="pill ' + (a.wl ? "w" : "") + '" data-act="wl" data-i="' + idx + '">' + (a.wl ? "Remove" : "Protect") + '</span>' +
+      '<span class="pill b" data-act="cyc" data-i="' + idx + '">Cycle</span>' +
       '</div>';
   }).join("");
 }
@@ -917,26 +917,26 @@ document.getElementById("appFilter").addEventListener("input", renderApps);
 document.getElementById("appReload").addEventListener("click", loadApps);
 
 document.getElementById("appOpt").addEventListener("click", async function () {
-  setTag("优化中…", "warn");
+  setTag("Optimizing…", "warn");
   const r = await sh("sh " + AC + " optimize");
-  toast((r.stdout || "完成").trim());
+  toast((r.stdout || "Done").trim());
   await loadApps();
-  setTag("已就绪", "ok");
+  setTag("Ready", "ok");
 });
 
 document.getElementById("appRest").addEventListener("click", async function () {
-  setTag("恢复中…", "warn");
+  setTag("Restoring…", "warn");
   const r = await sh("sh " + AC + " restore");
-  toast((r.stdout || "完成").trim());
+  toast((r.stdout || "Done").trim());
   await loadApps();
-  setTag("已就绪", "ok");
+  setTag("Ready", "ok");
 });
 
 document.getElementById("appHib").addEventListener("click", async function () {
-  setTag("休眠中…", "warn");
+  setTag("Hibernating…", "warn");
   const r = await sh("sh " + AC + " hibernate");
-  toast((r.stdout || "完成").trim());
-  setTag("已就绪", "ok");
+  toast((r.stdout || "Done").trim());
+  setTag("Ready", "ok");
 });
 
 function drawChart() {
@@ -992,7 +992,7 @@ async function liveTick() {
     series.gpu.shift();
   }
   document.getElementById("liveInfo").textContent =
-    "温度 " + temp + "°C · 负载 " + load.toFixed(2) + " · GPU " + gpu + " MHz · 电量 " + num(m.BATT, 0) + "%";
+    "Temp " + temp + "°C · Load " + load.toFixed(2) + " · GPU " + gpu + " MHz · Battery " + num(m.BATT, 0) + "%";
   drawChart();
 }
 
@@ -1001,14 +1001,14 @@ document.getElementById("liveStart").addEventListener("click", function () {
   series = { temp: [], cpu: [], gpu: [] };
   liveTick();
   liveTimer = setInterval(liveTick, 2000);
-  toast("监控已启动");
+  toast("Monitoring started");
 });
 
 document.getElementById("liveStop").addEventListener("click", function () {
   if (liveTimer) {
     clearInterval(liveTimer);
     liveTimer = null;
-    toast("监控已停止");
+    toast("Monitoring stopped");
   }
 });
 
@@ -1029,54 +1029,54 @@ async function loadRules() {
   document.getElementById("ruleList").innerHTML = ruleData.length ? ruleData.map(function (a) {
     return '<div class="app"><div class="n">' + esc(a.pkg) + '</div>' +
       '<span class="pill b">' + esc(a.prof) + '</span>' +
-      '<span class="pill d" data-del="' + esc(a.pkg) + '">删除</span></div>';
-  }).join("") : '<div class="muted">暂无规则</div>';
+      '<span class="pill d" data-del="' + esc(a.pkg) + '">Delete</span></div>';
+  }).join("") : '<div class="muted">No rules yet</div>';
 }
 
 document.getElementById("ruleList").addEventListener("click", async function (e) {
   const el = e.target.closest("[data-del]");
   if (!el) return;
   await sh("sh " + AW + " del " + el.dataset.del);
-  toast("规则已删除");
+  toast("Rule deleted");
   await loadRules();
 });
 
 async function loadPkgOptions() {
   const sel = document.getElementById("rulePkg");
-  sel.innerHTML = '<option value="">读取中…</option>';
+  sel.innerHTML = '<option value="">Loading…</option>';
   const r = await sh("sh " + AC + " list");
   const opts = [];
   r.stdout.split("\n").forEach(function (line) {
     const p = line.split("|");
     if (p[0]) opts.push(p[0]);
   });
-  sel.innerHTML = '<option value="">— 选择应用 —</option>' + opts.map(function (p) {
+  sel.innerHTML = '<option value="">— Select app —</option>' + opts.map(function (p) {
     return '<option value="' + esc(p) + '">' + esc(p) + '</option>';
   }).join("");
 }
 
 document.getElementById("ruleAdd").addEventListener("click", async function () {
   const pkg = document.getElementById("rulePkg").value;
-  if (!pkg) { toast("请先选择应用"); return; }
+  if (!pkg) { toast("Select an app first"); return; }
   const prof = document.getElementById("ruleProf").value;
   await sh("sh " + AW + " set " + pkg + " " + prof);
-  toast("已添加：" + pkg);
+  toast("Added: " + pkg);
   await loadRules();
 });
 
 document.getElementById("ruleReload").addEventListener("click", function () {
   loadPkgOptions();
   loadRules();
-  toast("已刷新");
+  toast("Refreshed");
 });
 
 document.getElementById("awSave").addEventListener("click", async function () {
-  setTag("保存中…", "warn");
+  setTag("Saving…", "warn");
   await saveKey("WATCH_BASE", document.getElementById("awBase").value);
   const on = document.getElementById("awOn").checked;
   await saveKey("APPWATCH", on ? "1" : "0");
   await sh("sh " + AW + (on ? " start" : " stop"));
-  toast(on ? "应用追踪已启动" : "已停止");
+  toast(on ? "App tracking started" : "Stopped");
   await load();
 });
 
@@ -1084,7 +1084,7 @@ document.getElementById("awStop").addEventListener("click", async function () {
   await saveKey("APPWATCH", "0");
   await sh("sh " + AW + " stop");
   document.getElementById("awOn").checked = false;
-  toast("已停止");
+  toast("Stopped");
   await load();
 });
 
@@ -1099,29 +1099,29 @@ async function loadCustom() {
   document.getElementById("cList").innerHTML = custData.length ? custData.map(function (a) {
     return '<div class="app"><div class="n">' + esc(a.label) +
       '<div class="pk">' + esc(a.path) + ' → ' + esc(a.want) +
-      ' <span style="color:' + (a.exists ? "#6ee7a8" : "#ff9c9c") + '">' + (a.exists ? "(节点存在)" : "(节点缺失)") + '</span></div></div>' +
+      ' <span style="color:' + (a.exists ? "#6ee7a8" : "#ff9c9c") + '">' + (a.exists ? "(node exists)" : "(node missing)") + '</span></div></div>' +
       '<span class="pill c">' + esc(a.cur || "-") + '</span>' +
-      '<span class="pill d" data-cdel="' + esc(a.path) + '">删除</span></div>';
-  }).join("") : '<div class="muted">暂无自定义参数</div>';
+      '<span class="pill d" data-cdel="' + esc(a.path) + '">Delete</span></div>';
+  }).join("") : '<div class="muted">No custom parameters yet</div>';
 }
 
 document.getElementById("cList").addEventListener("click", async function (e) {
   const el = e.target.closest("[data-cdel]");
   if (!el) return;
   await sh("sh " + CS + " del " + el.dataset.cdel);
-  toast("已删除");
+  toast("Deleted");
   await loadCustom();
 });
 
 document.getElementById("cAdd").addEventListener("click", async function () {
   const p = document.getElementById("cPath").value.trim();
   const v = document.getElementById("cVal").value.trim();
-  if (!p || !v) { toast("路径与值都不能为空"); return; }
+  if (!p || !v) { toast("Path and value cannot be empty"); return; }
   const r = await sh("sh " + CS + " add " + p + " " + v);
   if (r.stdout.indexOf("ERR") >= 0) {
     toast(r.stdout.trim());
   } else {
-    toast("已添加");
+    toast("Added");
     document.getElementById("cPath").value = "";
     document.getElementById("cVal").value = "";
     await loadCustom();
@@ -1129,32 +1129,32 @@ document.getElementById("cAdd").addEventListener("click", async function () {
 });
 
 document.getElementById("cApplyAll").addEventListener("click", async function () {
-  setTag("应用中…", "warn");
+  setTag("Applying…", "warn");
   const r = await sh("sh " + CS + " apply");
-  toast((r.stdout || "完成").trim());
+  toast((r.stdout || "Done").trim());
   await loadCustom();
-  setTag("已就绪", "ok");
+  setTag("Ready", "ok");
 });
 
 document.getElementById("cRevertAll").addEventListener("click", async function () {
-  setTag("还原中…", "warn");
+  setTag("Restoring…", "warn");
   const r = await sh("sh " + CS + " revert");
-  toast((r.stdout || "完成").trim());
+  toast((r.stdout || "Done").trim());
   await loadCustom();
-  setTag("已就绪", "ok");
+  setTag("Ready", "ok");
 });
 
 document.getElementById("dRefresh").addEventListener("click", async function () {
   const prof = document.querySelector(".prof.on").dataset.p;
   const r = await sh("sh " + DP + " refresh " + prof);
-  toast("已应用刷新率：" + prof);
+  toast("Refresh rate applied: " + prof);
   await load();
 });
 
 document.getElementById("dTouch").addEventListener("click", async function () {
   const prof = document.querySelector(".prof.on").dataset.p;
   await sh("sh " + DP + " touch " + prof);
-  toast("已应用触控档：" + prof);
+  toast("Touch profile applied: " + prof);
   await load();
 });
 
@@ -1186,11 +1186,11 @@ function gsSetActive(m) {
     const on = k === gsMode;
     row.style.borderColor = on ? "#4f8cff" : "";
     row.style.background = on ? "rgba(79,140,255,.08)" : "";
-    pill.textContent = on ? "当前" : "选择";
+    pill.textContent = on ? "Active" : "Select";
     pill.className = "pill" + (on ? " a" : " b");
   });
   document.getElementById("gsState").textContent =
-    gsMode === "1" ? "增强模式运行中" : (gsMode === "2" ? "普通模式运行中" : "未启用防护");
+    gsMode === "1" ? "Enhanced mode active" : (gsMode === "2" ? "Normal mode active" : "Protection off");
 }
 
 async function gsPick(m) {
@@ -1200,10 +1200,10 @@ async function gsPick(m) {
     await sh("sh " + WS + " stop");
     document.getElementById("gsAlert").style.display = "none";
     gsShownSig = "";
-    toast("已关闭防护");
+    toast("Protection disabled");
   } else {
     await sh("sh " + WS + " start");
-    toast(m === "1" ? "已启用增强模式" : "已启用普通模式");
+    toast(m === "1" ? "Enhanced mode enabled" : "Normal mode enabled");
   }
   gsSetActive(m);
   await gsLoadLog();
@@ -1211,7 +1211,7 @@ async function gsPick(m) {
 
 async function gsLoadLog() {
   const r = await sh("sh " + WS + " log");
-  document.getElementById("gsLog").textContent = r.stdout.trim() || "暂无记录";
+  document.getElementById("gsLog").textContent = r.stdout.trim() || "No records yet";
 }
 
 async function gsCheckSignal() {
@@ -1230,9 +1230,9 @@ async function gsCheckSignal() {
   const pid = parts[2] || "?";
   const cmd = parts.slice(3).join("|");
   document.getElementById("gsCmd").textContent =
-    "PID: " + pid + "\n命令: " + cmd;
+    "PID: " + pid + "\nCommand: " + cmd;
   document.getElementById("gsAlert").style.display = "block";
-  toast("检测到危险操作，请确认");
+  toast("Dangerous operation detected, please confirm");
 }
 
 ["1", "2", "3"].forEach(function (k) {
@@ -1243,14 +1243,14 @@ async function gsCheckSignal() {
 document.getElementById("gsKill").addEventListener("click", async function () {
   await sh("sh " + WS + " answer kill");
   document.getElementById("gsAlert").style.display = "none";
-  toast("已终止该进程");
+  toast("Process killed");
   await gsLoadLog();
 });
 
 document.getElementById("gsAllow").addEventListener("click", async function () {
   await sh("sh " + WS + " answer allow");
   document.getElementById("gsAlert").style.display = "none";
-  toast("已放行并加入白名单");
+  toast("Allowed and added to whitelist");
   await gsLoadLog();
 });
 
@@ -1286,11 +1286,11 @@ function zoneMenu() {
   const lines = ZONE_OPTS.map(function (z) {
     return (picked.indexOf(z) >= 0 ? "[x] " : "[ ] ") + z;
   }).join("\n");
-  const ans = prompt("选择要解锁的温控区（用逗号分隔名称，all 表示全部）：\n\n" + lines + "\n\n当前: " + (cur.join(",") || "cpu,gpu"), cur.join(",") || "cpu,gpu");
+  const ans = prompt("Choose thermal zones to unlock (comma-separated names; all = everything):\n\n" + lines + "\n\nCurrent: " + (cur.join(",") || "cpu,gpu"), cur.join(",") || "cpu,gpu");
   if (ans === null) return;
   const val = ans.split(",").map(function (x) { return x.trim(); }).filter(Boolean).join(",") || "cpu,gpu";
   document.getElementById("zoneBtn").textContent = val;
-  saveKey("THERMAL_ZONES", val).then(function () { toast("已保存，重新应用后生效"); });
+  saveKey("THERMAL_ZONES", val).then(function () { toast("Saved; takes effect after re-applying"); });
 }
 
 const zb = document.getElementById("zoneBtn");
@@ -1308,23 +1308,23 @@ function put(id, txt) {
 
 function need(id, name) {
   const v = document.getElementById(id).value.trim();
-  if (!v) { toast("请填写" + name); return null; }
+  if (!v) { toast("Please enter " + name); return null; }
   return v;
 }
 
 document.getElementById("bkExport").addEventListener("click", async function () {
   const r = await sh("sh " + BK + " export");
   put("bkOut", r.stdout + r.stderr);
-  toast("已导出");
+  toast("Exported");
 });
 
 document.getElementById("bkList").addEventListener("click", async function () {
   const r = await sh("sh " + BK + " list");
-  put("bkOut", r.stdout || "（无备份文件）");
+  put("bkOut", r.stdout || "(no backup files)");
 });
 
 document.getElementById("bkImport").addEventListener("click", async function () {
-  const p = need("bkPath", "文件路径");
+  const p = need("bkPath", "file path");
   if (!p) return;
   const r = await sh("sh " + BK + " import '" + p + "'");
   put("bkOut", r.stdout + r.stderr);
@@ -1332,7 +1332,7 @@ document.getElementById("bkImport").addEventListener("click", async function () 
 });
 
 document.getElementById("psSave").addEventListener("click", async function () {
-  const n = need("psName", "名称");
+  const n = need("psName", "name");
   if (!n) return;
   const r = await sh("sh " + PS + " save '" + n + "' " + document.getElementById("psBase").value);
   put("psOut", r.stdout + r.stderr);
@@ -1342,19 +1342,19 @@ document.getElementById("psSave").addEventListener("click", async function () {
 document.getElementById("psList").addEventListener("click", async function () {
   const r = await sh("sh " + PS + " list");
   const lines = (r.stdout || "").trim().split("\n").filter(Boolean);
-  if (!lines.length) { put("psOut", "（无自定义预设）"); return; }
+  if (!lines.length) { put("psOut", "(no custom presets)"); return; }
   put("psOut", lines.map(function (l) {
     const p = l.split("|");
-    return p[0] + "  (基准 " + p[1] + ")  " + (p[2] || "");
+    return p[0] + "  (base " + p[1] + ")  " + (p[2] || "");
   }).join("\n"));
 });
 
 document.getElementById("acAdd").addEventListener("click", async function () {
-  const pkg = need("acPkg", "包名");
+  const pkg = need("acPkg", "package name");
   if (!pkg) return;
-  const path = need("acPath", "节点路径");
+  const path = need("acPath", "node path");
   if (!path) return;
-  const val = need("acVal", "值");
+  const val = need("acVal", "value");
   if (!val) return;
   const r = await sh("sh " + CU + " app-add '" + pkg + "' '" + path + "' '" + val + "'");
   put("acOut", r.stdout + r.stderr);
@@ -1363,15 +1363,15 @@ document.getElementById("acAdd").addEventListener("click", async function () {
 document.getElementById("acList").addEventListener("click", async function () {
   const r = await sh("sh " + CU + " app-list");
   const lines = (r.stdout || "").trim().split("\n").filter(Boolean);
-  if (!lines.length) { put("acOut", "（无应用级参数）"); return; }
+  if (!lines.length) { put("acOut", "(no per-app parameters)"); return; }
   put("acOut", lines.map(function (l) {
     const p = l.split("|");
-    return p[0] + "\n  设 " + p[1] + " = " + p[2] + "\n  当前 " + (p[3] || "?");
+    return p[0] + "\n  set " + p[1] + " = " + p[2] + "\n  current " + (p[3] || "?");
   }).join("\n\n"));
 });
 
 document.getElementById("drRun").addEventListener("click", async function () {
-  put("drOut", "计算中…");
+  put("drOut", "Calculating…");
   const r = await sh("sh " + TU + " dry");
   put("drOut", r.stdout + r.stderr);
 });
@@ -1380,15 +1380,15 @@ const KN = MOD + "/bin/kernel.sh";
 const WD = MOD + "/bin/watchdog.sh";
 
 const KX_KEYS = [
-  ["DEVFREQ", "devfreq 总线调频"],
-  ["KSM", "KSM 内存去重"],
-  ["THP", "透明大页"],
-  ["SCHEDTUNE", "schedtune 调度增强"],
-  ["TCP_TUNE", "TCP 三层缓冲"],
-  ["BOOST", "触控 boost"],
-  ["FS_TUNE", "文件系统上限"],
-  ["WATCHDOG", "守护看门狗"],
-  ["BATT_PROFILE", "低电量自动省电"]
+  ["DEVFREQ", "devfreq Bus Scaling"],
+  ["KSM", "KSM Memory Dedup"],
+  ["THP", "Transparent Huge Pages"],
+  ["SCHEDTUNE", "schedtune Scheduling Boost"],
+  ["TCP_TUNE", "TCP Three-Tier Buffers"],
+  ["BOOST", "Touch Boost"],
+  ["FS_TUNE", "Filesystem Limits"],
+  ["WATCHDOG", "Guard Watchdog"],
+  ["BATT_PROFILE", "Auto Power Save on Low Battery"]
 ];
 
 async function kxRender() {
@@ -1406,7 +1406,7 @@ async function kxRender() {
   box.querySelectorAll("input[type=checkbox]").forEach(function (cb) {
     cb.addEventListener("change", async function () {
       await sh("sh " + MOD + "/bin/tuner.sh set " + cb.dataset.k + " " + (cb.checked ? "1" : "0"));
-      toast(cb.dataset.k + (cb.checked ? " 已开启" : " 已关闭"));
+      toast(cb.dataset.k + (cb.checked ? " enabled" : " disabled"));
     });
   });
 }
@@ -1417,9 +1417,9 @@ document.getElementById("kxStatus").addEventListener("click", async function () 
 });
 
 document.getElementById("kxDev").addEventListener("click", async function () {
-  put("kxOut", "读取中…");
+  put("kxOut", "Loading…");
   const r = await sh("sh " + KN + " devfreq-list");
-  put("kxOut", r.stdout || "（设备无 devfreq 节点）");
+  put("kxOut", r.stdout || "(no devfreq nodes on this device)");
 });
 
 document.getElementById("wdStart").addEventListener("click", async function () {
@@ -1439,7 +1439,7 @@ document.getElementById("wdStatus").addEventListener("click", async function () 
 
 document.getElementById("wdLog").addEventListener("click", async function () {
   const r = await sh("sh " + WD + " log");
-  put("wdOut", r.stdout || "（无日志）");
+  put("wdOut", r.stdout || "(no logs)");
 });
 
 try { ksu.enableEdgeToEdge(true); } catch (e) {}
