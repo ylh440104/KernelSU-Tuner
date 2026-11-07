@@ -2,6 +2,16 @@
 
 版本号与 `module.prop` 中的 `version` 一致，括号内为 `versionCode`。
 
+## v3.5.3 (30053)
+
+安全加固。
+
+- 自定义参数不再允许写入几个能直接毁设备或执行任意代码的节点：`/proc/sysrq-trigger`、`/proc/sys/kernel/core_pattern`、`/proc/sys/kernel/modprobe`、`/proc/sys/kernel/hotplug`、`/sys/kernel/uevent_helper`、`/proc/kcore`、`/proc/kmem`、`/proc/mem`、`/proc/kmsg`。
+- 防格机补上几类之前漏掉的擦除命令：`blkdiscard`、`sgdisk --zap`、`mke2fs`、`fdisk`、`parted`，以及 `dd` 写 `/dev/mmcblk`、`/dev/nvme`。路径里的 `..` 也不再能绕过白名单。
+- 配置备份导入时，值里的换行符会被压成空格，之前可以用它往 `config.conf` 里塞额外配置行。
+- `appwatch.sh set` 现在校验包名和预设名，之前带 `|` 的包名会污染规则文件。
+- WebUI 里从 DOM 属性读回再拼进命令的地方（删除规则、删除自定义参数）也加了转义。
+
 ## v3.5.2 (30052)
 
 修掉几处底层问题。

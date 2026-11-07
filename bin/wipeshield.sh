@@ -54,6 +54,7 @@ suspicious_cmd() {
 
   case "$c" in
     *rm*|*mkfs*|*dd*|*shred*|*fastboot*|*wipe*|*flash*|*mv*|*chmod*) ;;
+    *blkdiscard*|*sgdisk*|*mke2fs*|*fdisk*|*parted*) ;;
     *) return 1 ;;
   esac
 
@@ -75,6 +76,16 @@ suspicious_cmd() {
     *"dd "*"of=/dev/block"*) return 0 ;;
     *"of=/dev/block/by-name"*) return 0 ;;
     *"of=/dev/sd"*) return 0 ;;
+    *"of=/dev/mmcblk"*) return 0 ;;
+    *"of=/dev/nvme"*) return 0 ;;
+    *"of=/dev/disk"*) return 0 ;;
+  esac
+  case "$c" in
+    *"blkdiscard"*"/dev/"*) return 0 ;;
+    *"sgdisk"*"--zap"*) return 0 ;;
+    *"mke2fs"*"/dev/block"*) return 0 ;;
+    *"fdisk"*"/dev/block"*) return 0 ;;
+    *"parted"*"/dev/block"*) return 0 ;;
   esac
 
   case "$c" in
@@ -111,12 +122,16 @@ suspicious_cmd() {
 protected_path() {
   p=$(printf '%s' "$1")
   case "$p" in
+    *".."*) return 0 ;;
+  esac
+  case "$p" in
     /data/local/tmp|/data/local/tmp/*|/data/media|/data/media/*|/tmp|/tmp/*|/cache|/cache/*) return 1 ;;
     /data|/data/*) return 0 ;;
     /system|/system/*|/vendor|/vendor/*|/product|/product/*) return 0 ;;
     /sdcard|/sdcard/*|/storage|/storage/*|/mnt|/mnt/*) return 0 ;;
     /boot|/boot/*|/persist|/persist/*|/metadata|/metadata/*) return 0 ;;
     /dev/block|/dev/block/*) return 0 ;;
+    /proc|/proc/*|/sys|/sys/*|/etc|/etc/*|/apex|/apex/*|/odm|/odm/*) return 0 ;;
   esac
   return 1
 }

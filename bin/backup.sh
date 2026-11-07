@@ -115,7 +115,7 @@ n_cfg = n_rules = n_custom = n_wl = 0
 cfg_pairs = []
 for item in d.get("config", []):
     k = str(item.get("k", "")).strip()
-    v = str(item.get("v", ""))
+    v = str(item.get("v", "")).replace("\n", " ").replace("\r", " ")
     if not k or "=" in k or "|" in k:
         continue
     cfg_pairs.append((k, v))

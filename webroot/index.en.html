@@ -1042,7 +1042,7 @@ async function loadRules() {
 document.getElementById("ruleList").addEventListener("click", async function (e) {
   const el = e.target.closest("[data-del]");
   if (!el) return;
-  await sh("sh " + AW + " del " + el.dataset.del);
+  await sh("sh " + AW + " del " + q(el.dataset.del));
   toast("Rule deleted");
   await loadRules();
 });
@@ -1114,7 +1114,7 @@ async function loadCustom() {
 document.getElementById("cList").addEventListener("click", async function (e) {
   const el = e.target.closest("[data-cdel]");
   if (!el) return;
-  await sh("sh " + CS + " del " + el.dataset.cdel);
+  await sh("sh " + CS + " del " + q(el.dataset.cdel));
   toast("Deleted");
   await loadCustom();
 });

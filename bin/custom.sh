@@ -35,6 +35,12 @@ valid_path() {
   case "$1" in
     *"|"*) return 1 ;;
   esac
+  case "$1" in
+    *sysrq-trigger|*core_pattern|*kernel/modprobe|*kernel/hotplug|*uevent_helper) return 1 ;;
+  esac
+  case "$1" in
+    /proc/kcore|/proc/kmem|/proc/mem|/proc/kmsg|*/proc/kcore|*/proc/kmem|*/proc/mem|*/proc/kmsg) return 1 ;;
+  esac
   return 0
 }
 

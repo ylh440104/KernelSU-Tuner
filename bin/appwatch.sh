@@ -129,6 +129,13 @@ case "$1" in
   set)
     [ -n "$1" ] || exit 1
     [ -n "$2" ] || exit 1
+    case "$2" in
+      *[!A-Za-z0-9._-]*) printf 'ERR 包名无效\n'; exit 1 ;;
+    esac
+    case "$3" in
+      powersave|balanced|performance|gaming) ;;
+      *) printf 'ERR 预设无效\n'; exit 1 ;;
+    esac
     awk -F'|' -v p="$2" '$1!=p {print}' "$RULES" > "$RULES.t" 2>/dev/null
     mv -f "$RULES.t" "$RULES" 2>/dev/null
     printf '%s|%s\n' "$2" "$3" >> "$RULES"
