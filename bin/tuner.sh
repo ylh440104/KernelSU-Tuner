@@ -198,8 +198,12 @@ freq_span() {
   fl_hi=""
   for v in $(freq_list "$1"); do
     case "$v" in ''|*[!0-9]*) continue ;; esac
-    [ -z "$fl_lo" ] && fl_lo=$v
-    fl_hi=$v
+    if [ -z "$fl_lo" ] || [ "$v" -lt "$fl_lo" ]; then
+      fl_lo=$v
+    fi
+    if [ -z "$fl_hi" ] || [ "$v" -gt "$fl_hi" ]; then
+      fl_hi=$v
+    fi
   done
   [ -n "$fl_hi" ] || return 1
   [ -n "$fl_lo" ] || fl_lo=$fl_hi
@@ -215,9 +219,12 @@ freq_pick() {
   hi=$(printf '%s' "$span" | cut -d' ' -f2)
   case "$lo" in ''|*[!0-9]*) return 1 ;; esac
   case "$hi" in ''|*[!0-9]*) return 1 ;; esac
-  if [ "$hi" -le "$lo" ]; then
+  if [ "$hi" -eq "$lo" ]; then
     printf '%s' "$hi"
     return 0
+  fi
+  if [ "$hi" -lt "$lo" ]; then
+    return 1
   fi
   target=$((lo + (hi - lo) * pct / 100))
   best=$lo
@@ -237,102 +244,18 @@ freq_pick() {
   printf '%s' "$best"
 }
 
-freq_list() {
-  f=$(cat "$1/scaling_available_frequencies" 2>/dev/null)
-  if [ -z "$f" ]; then
-    hi=$(cat "$1/cpuinfo_max_freq" 2>/dev/null)
-    lo=$(cat "$1/cpuinfo_min_freq" 2>/dev/null)
-    f="$lo $hi"
-  fi
-  printf '%s' "$f" | tr -s ' '
-}
-
-freq_span() {
-  fl_lo=""
-  fl_hi=""
-  for v in $(freq_list "$1"); do
-    case "$v" in ''|*[!0-9]*) continue ;; esac
-    [ -z "$fl_lo" ] && fl_lo=$v
-    fl_hi=$v
-  done
-  [ -n "$fl_hi" ] || return 1
-  [ -n "$fl_lo" ] || fl_lo=$fl_hi
-  printf '%s %s' "$fl_lo" "$fl_hi"
-}
-
-freq_pick() {
-  set -- $1 $2
-  d=$1
-  pct=$2
-  span=$(freq_span "$d") || return 1
-  lo=$(printf '%s' "$span" | cut -d' ' -f1)
-  hi=$(printf '%s' "$span" | cut -d' ' -f2)
-  case "$lo" in ''|*[!0-9]*) return 1 ;; esac
-  case "$hi" in ''|*[!0-9]*) return 1 ;; esac
-  if [ "$hi" -le "$lo" ]; then
-    printf '%s' "$hi"
-    return 0
-  fi
-  target=$((lo + (hi - lo) * pct / 100))
-  best=$lo
-  diff=999999999999
-  for v in $(freq_list "$d"); do
-    case "$v" in ''|*[!0-9]*) continue ;; esac
-    if [ "$v" -ge "$target" ]; then
-      dd=$((v - target))
-    else
-      dd=$((target - v))
-    fi
-    if [ "$dd" -lt "$diff" ]; then
-      diff=$dd
-      best=$v
-    fi
-  done
-  printf '%s' "$best"
-}
-
-root_block() {
-  for b in /sys/block/*; do
-    [ -d "$b" ] || continue
-    n=${b##*/}
-    case "$n" in loop*|ram*|zram*|dm-*|sr*|fd*|md*) continue ;; esac
-    [ -f "$b/queue/scheduler" ] || [ -f "$b/queue/read_ahead_kb" ] || continue
-    printf '%s' "$n"
-    return 0
-  done
-  return 1
-}
 
 apply_cpu() {
   prof=$1
   case "$prof" in
-    powersave) glist="powersave schedutil ondemand conservative interactive" ;;
-    balanced) glist="schedutil interactive ondemand conservative" ;;
-    *) glist="performance schedutil interactive ondemand" ;;
+    powersave) glist="powersave schedutil walt ondemand conservative interactive" ;;
+    balanced) glist="schedutil walt sugov_ext interactive ondemand conservative" ;;
+    *) glist="performance walt schedutil interactive ondemand" ;;
   esac
   if [ "$(cfg_get CPU_GOV)" = "1" ]; then
     for d in $(cpu_dirs); do
       g=$(pick_gov "$d" "$glist")
       [ -n "$g" ] && wr "$d/scaling_governor" "$g"
-    done
-  fi
-  if [ "$(cfg_get CPU_FREQ)" = "1" ]; then
-    case "$prof" in
-      powersave) pmin=10 ; pmax=45 ;;
-      balanced) pmin=20 ; pmax=75 ;;
-      performance) pmin=45 ; pmax=92 ;;
-      gaming) pmin=60 ; pmax=100 ;;
-      *) pmin=20 ; pmax=75 ;;
-    esac
-    for d in $(cpu_dirs); do
-      hi=$(freq_pick "$d" "$pmax")
-      lo=$(freq_pick "$d" "$pmin")
-      if [ -n "$hi" ]; then
-        wr "$d/scaling_max_freq" "$hi"
-      fi
-      if [ -n "$lo" ]; then
-        wr "$d/scaling_min_freq" "$lo"
-      fi
     done
   fi
   if [ "$(cfg_get CPU_FREQ)" = "1" ]; then
@@ -361,6 +284,7 @@ apply_cpu() {
     done
   fi
 }
+
 
 apply_io() {
   prof=$1
@@ -418,8 +342,7 @@ apply_gpu() {
     if [ "$n" -gt 0 ]; then
       case "$glvl" in
         low) wr /sys/class/kgsl/kgsl-3d0/max_pwrlevel "$((n - 1))" ;;
-        mid) wr /sys/class/kgsl/kgsl-3d0/max_pwrlevel "$((n / 2))" ;;
-        *) wr /sys/class/kgsl/kgsl-3d0/max_pwrlevel 0 ;;
+        high|max) wr /sys/class/kgsl/kgsl-3d0/max_pwrlevel 0 ;;
       esac
     fi
     wr /sys/class/kgsl/kgsl-3d0/idle_timer 80
@@ -552,10 +475,7 @@ apply_lmk() {
   if [ -f /sys/module/lowmemorykiller/parameters/enable_lmk ]; then
     wr /sys/module/lowmemorykiller/parameters/enable_lmk 1
   fi
-  for l in /sys/module/lowmemorykiller/parameters/lmk_count /sys/module/lowmemorykiller/parameters/kill_timeout; do
-    [ -f "$l" ] || continue
-  done
-  wr /proc/sys/vm/watermark_scale_factor 150
+  wr /proc/sys/vm/watermark_scale_factor 100
   wr /proc/sys/vm/watermark_boost_factor 15000
   return 0
 }
