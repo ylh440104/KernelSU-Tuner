@@ -125,6 +125,7 @@ cursor:pointer;white-space:nowrap;border:1px solid transparent
     <h1>KernelSU Tuner <span class="tag" id="tagState">就绪</span></h1>
     <div class="sub" id="subInfo">正在读取设备信息…</div>
   </div>
+  <button class="btn s" id="langBtn" style="flex:none">EN</button>
 </div>
 
 <div class="tabs">
@@ -1443,6 +1444,10 @@ document.getElementById("wdLog").addEventListener("click", async function () {
 });
 
 try { ksu.enableEdgeToEdge(true); } catch (e) {}
+document.getElementById("langBtn").addEventListener("click", function () {
+  localStorage.setItem("ksuTunerLang", "en");
+  location.href = "index.en.html";
+});
 load();
 setInterval(function () { if (!liveTimer) load(); }, 30000);
 </script>
