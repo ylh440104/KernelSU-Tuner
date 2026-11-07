@@ -45,9 +45,11 @@ if command -v settings >/dev/null 2>&1; then
   settings delete global animator_duration_scale 2>/dev/null
 fi
 
-for d in /proc/sys/net/ipv6/conf/*/disable_ipv6; do
-  [ -f "$d" ] || continue
-  printf '0' > "$d" 2>/dev/null
-done
+if [ "$(sed -n 's/^IPV6_OFF=//p' "$CFG" 2>/dev/null | tail -n 1)" = "1" ]; then
+  for d in /proc/sys/net/ipv6/conf/*/disable_ipv6; do
+    [ -f "$d" ] || continue
+    printf '0' > "$d" 2>/dev/null
+  done
+fi
 
 rm -rf "$CFG_DIR" 2>/dev/null

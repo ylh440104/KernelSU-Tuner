@@ -548,22 +548,16 @@ zone_allowed() {
 }
 
 apply_thermal() {
-  if [ "$(cfg_get THERMAL_OPEN)" = "1" ]; then
-    wr /sys/module/msm_thermal/parameters/enabled N
-    wr /sys/module/msm_thermal/core_control/enabled N
-    wr /sys/module/msm_thermal/vdd_restriction/enabled N
-    for z in /sys/class/thermal/thermal_zone*; do
-      [ -f "$z/mode" ] || continue
-      if zone_allowed "$(zone_type "$z")"; then
-        wr "$z/mode" disabled
-      fi
-    done
-  else
-    for z in /sys/class/thermal/thermal_zone*; do
-      [ -f "$z/mode" ] || continue
-      wr "$z/mode" enabled
-    done
-  fi
+  [ "$(cfg_get THERMAL_OPEN)" = "1" ] || return 0
+  wr /sys/module/msm_thermal/parameters/enabled N
+  wr /sys/module/msm_thermal/core_control/enabled N
+  wr /sys/module/msm_thermal/vdd_restriction/enabled N
+  for z in /sys/class/thermal/thermal_zone*; do
+    [ -f "$z/mode" ] || continue
+    if zone_allowed "$(zone_type "$z")"; then
+      wr "$z/mode" disabled
+    fi
+  done
 }
 
 list_thermal() {
@@ -597,15 +591,10 @@ apply_selinux() {
 }
 
 apply_ipv6() {
-  if [ "$(cfg_get IPV6_OFF)" = "1" ]; then
-    for d in /proc/sys/net/ipv6/conf/*/disable_ipv6; do
-      wr "$d" 1
-    done
-  else
-    for d in /proc/sys/net/ipv6/conf/*/disable_ipv6; do
-      wr "$d" 0
-    done
-  fi
+  [ "$(cfg_get IPV6_OFF)" = "1" ] || return 0
+  for d in /proc/sys/net/ipv6/conf/*/disable_ipv6; do
+    wr "$d" 1
+  done
 }
 
 apply_dns() {
@@ -616,10 +605,6 @@ apply_dns() {
     balanced) d="223.5.5.5,119.29.29.29" ;;
     *) d="1.1.1.1,8.8.8.8" ;;
   esac
-  if command -v settings >/dev/null 2>&1; then
-    settings put global private_dns_mode off 2>/dev/null
-    settings put global private_dns_specifier "" 2>/dev/null
-  fi
   for r in /system/etc/resolv.conf /etc/resolv.conf; do
     [ -d "$(dirname "$r")" ] || continue
     if [ -f "$r" ]; then
@@ -628,8 +613,8 @@ apply_dns() {
   done
   if [ "$prof" = "gaming" ] || [ "$prof" = "performance" ]; then
     if command -v settings >/dev/null 2>&1; then
-      settings put global private_dns_mode hostname 2>/dev/null
-      settings put global private_dns_specifier dns.google 2>/dev/null
+      settings put global private_dns_mode opportunistic 2>/dev/null
+      settings put global private_dns_specifier "" 2>/dev/null
     fi
   fi
 }
