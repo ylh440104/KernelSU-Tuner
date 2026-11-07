@@ -580,6 +580,10 @@ function setTag(text, cls) {
   t.className = "tag" + (cls ? " " + cls : "");
 }
 
+function q(s) {
+  return "'" + String(s).replace(/'/g, "'\\''") + "'";
+}
+
 function esc(s) {
   return String(s).replace(/[&<>"]/g, function (c) {
     if (c === "&") return "&#38;";
@@ -722,7 +726,7 @@ async function load() {
 }
 
 async function saveKey(k, v) {
-  await sh("sh " + TUNER + " set " + k + " " + v);
+  await sh("sh " + TUNER + " set " + k + " " + q(v));
 }
 
 async function apply() {
@@ -1119,7 +1123,7 @@ document.getElementById("cAdd").addEventListener("click", async function () {
   const p = document.getElementById("cPath").value.trim();
   const v = document.getElementById("cVal").value.trim();
   if (!p || !v) { toast("Path and value cannot be empty"); return; }
-  const r = await sh("sh " + CS + " add " + p + " " + v);
+  const r = await sh("sh " + CS + " add " + q(p) + " " + q(v));
   if (r.stdout.indexOf("ERR") >= 0) {
     toast(r.stdout.trim());
   } else {
@@ -1328,7 +1332,7 @@ document.getElementById("bkList").addEventListener("click", async function () {
 document.getElementById("bkImport").addEventListener("click", async function () {
   const p = need("bkPath", "file path");
   if (!p) return;
-  const r = await sh("sh " + BK + " import '" + p + "'");
+  const r = await sh("sh " + BK + " import " + q(p));
   put("bkOut", r.stdout + r.stderr);
   await load();
 });
@@ -1336,7 +1340,7 @@ document.getElementById("bkImport").addEventListener("click", async function () 
 document.getElementById("psSave").addEventListener("click", async function () {
   const n = need("psName", "name");
   if (!n) return;
-  const r = await sh("sh " + PS + " save '" + n + "' " + document.getElementById("psBase").value);
+  const r = await sh("sh " + PS + " save " + q(n) + " " + q(document.getElementById("psBase").value));
   put("psOut", r.stdout + r.stderr);
   document.getElementById("psName").value = "";
 });
@@ -1358,7 +1362,7 @@ document.getElementById("acAdd").addEventListener("click", async function () {
   if (!path) return;
   const val = need("acVal", "value");
   if (!val) return;
-  const r = await sh("sh " + CU + " app-add '" + pkg + "' '" + path + "' '" + val + "'");
+  const r = await sh("sh " + CU + " app-add " + q(pkg) + " " + q(path) + " " + q(val));
   put("acOut", r.stdout + r.stderr);
 });
 

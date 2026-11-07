@@ -7,7 +7,7 @@ CFG_VER=2
 cfg_lock_wait() {
   i=0
   while [ "$i" -lt 15 ]; do
-    mkdir "$CFG_DIR/.lock" 2>/dev/null && return 0
+    mkdir "$CFG_DIR/.cfglock" 2>/dev/null && return 0
     j=0
     while [ "$j" -lt 10 ]; do
       sleep 1
@@ -19,7 +19,7 @@ cfg_lock_wait() {
 }
 
 cfg_unlock() {
-  rmdir "$CFG_DIR/.lock" 2>/dev/null
+  rmdir "$CFG_DIR/.cfglock" 2>/dev/null
   return 0
 }
 

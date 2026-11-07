@@ -34,8 +34,10 @@ cfg_get() {
 }
 
 cfg_set() {
-  sed -i "/^$1=/d" "$CFG" 2>/dev/null
-  printf '%s=%s\n' "$1" "$2" >> "$CFG"
+  tmp="$CFG_DIR/.cfg.$$"
+  awk -v k="$1" -v v="$2" 'BEGIN{d=0} $0~("^" k "="){if(!d){print k "=" v; d=1}; next} {print} END{if(!d) print k "=" v}' "$CFG" > "$tmp" 2>/dev/null || return 1
+  [ -s "$tmp" ] || { rm -f "$tmp" 2>/dev/null; return 1; }
+  mv -f "$tmp" "$CFG" 2>/dev/null || rm -f "$tmp" 2>/dev/null
 }
 
 bk_save() {

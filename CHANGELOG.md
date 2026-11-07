@@ -2,6 +2,14 @@
 
 版本号与 `module.prop` 中的 `version` 一致，括号内为 `versionCode`。
 
+## v3.5.2 (30052)
+
+修掉几处底层问题。
+
+- 配置写入全部改成原子替换。`tuner.sh`、`display.sh`、`wipeshield.sh`、`action.sh` 之前用 `sed -i` 加追加的写法，写到一半中断会把 `config.conf` 写坏。
+- WebUI 里拼进命令行的用户输入现在统一转义。自定义参数、备份导入、预设名称、应用级参数这几处之前只是简单加单引号，输入里带单引号会破坏命令。
+- `tuner.sh` 和 `cfg.sh` 用了同一个锁目录 `.lock`，同时运行会互相等最多 150 秒。`cfg.sh` 改用 `.cfglock`。
+
 ## v3.5.1 (30051)
 
 修复几个实际问题。
