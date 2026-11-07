@@ -539,6 +539,7 @@ cursor:pointer;white-space:nowrap;border:1px solid transparent
 
 <script>
 const MOD = "/data/adb/modules/KernelSU-Tuner";
+if (localStorage.getItem("ksuTunerLang") === "en") location.href = "index.en.html";
 const TUNER = MOD + "/bin/tuner.sh";
 const AP = MOD + "/bin/autopilot.sh";
 const BG = MOD + "/bin/guard.sh";

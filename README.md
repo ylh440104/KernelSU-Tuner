@@ -133,6 +133,8 @@ on property:sys.boot_completed=1
 
 WebUI 在模块列表里点进去就行，动作按钮会按 `省电切档 → 智能驾驶 → 电池守护 → 应用追踪 → 关闭全部` 循环。
 
+界面右上角有个语言按钮，点一下在中文和英文之间切换，选择会记住。英文界面是 `webroot/index.en.html`，默认打开的仍然是中文的 `webroot/index.html`。
+
 ---
 
 ## 命令行
@@ -266,7 +268,8 @@ LIVE_GPUFREQ=490
 │   └── init-apply.sh      initrc 调用的入口
 ├── sepolicy.rule          SELinux 规则
 └── webroot/
-    └── index.html         WebUI（单文件，无外部依赖）
+    ├── index.html         中文界面（管理器默认打开）
+    └── index.en.html      英文界面
 ```
 
 运行时数据在 `/data/adb/ksu_tuner/`（与模块 id 解耦，升级不丢配置）：`config.conf` 配置、`backup.conf` 原始值备份、`tuner.log` 日志、各守护进程的 `.pid` 和 `.log`。

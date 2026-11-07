@@ -30,7 +30,10 @@ log() {
 }
 
 alive() {
-  f="$CFG_DIR/$1.pid"
+  case "$1" in
+    wipeshield) f="$CFG_DIR/shield.pid" ;;
+    *) f="$CFG_DIR/$1.pid" ;;
+  esac
   [ -f "$f" ] || return 1
   p=$(head -n 1 "$f" 2>/dev/null)
   case "$p" in ''|*[!0-9]*) return 1 ;; esac

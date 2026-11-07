@@ -2,6 +2,16 @@
 
 版本号与 `module.prop` 中的 `version` 一致，括号内为 `versionCode`。
 
+## v3.5.1 (30051)
+
+修复几个实际问题。
+
+- 看门狗不再强行拉起已关闭的功能。`autopilot`、`guard`、`appwatch`、`wipeshield` 的 `start` 现在先检查对应开关，关掉就是关掉。
+- 语言选择现在真的会被记住。两个界面启动时都会读 `localStorage`，上次选了英文就直接进英文界面。
+- 发布的 ZIP 现在包含全部文件。之前缺 `module.yaml`、图标、README、LICENSE 和 CHANGELOG。
+- 补上双语的文档说明。
+- 去掉 `module.yaml` 开头的注释行。
+
 ## v3.5.0 (30050)
 
 WebUI 支持中英双语切换。

@@ -222,6 +222,8 @@ run_loop() {
 
 case "$1" in
   start)
+    on=$(get AUTOPILOT)
+    [ "$on" = "1" ] || { printf 'AutoPilot 未启用\n'; exit 0; }
     if [ -f "$PIDF" ]; then
       p=$(cat "$PIDF" 2>/dev/null)
       if [ -n "$p" ] && kill -0 "$p" 2>/dev/null; then

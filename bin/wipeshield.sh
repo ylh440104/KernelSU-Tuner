@@ -238,6 +238,12 @@ run_loop() {
 
 case "$1" in
   start)
+    on=$(get GUARD_MODE)
+    [ -n "$on" ] || on=3
+    if [ "$on" = "3" ]; then
+      printf '防护未启用\n'
+      exit 0
+    fi
     if [ -f "$PIDF" ]; then
       p=$(cat "$PIDF" 2>/dev/null)
       if [ -n "$p" ] && kill -0 "$p" 2>/dev/null; then

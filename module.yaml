@@ -1,4 +1,3 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/KernelSU-Modules/tools/main/schemas/module.schema.json
 schemaVersion: 1
 id: KernelSU-Tuner
 name: KernelSU Tuner

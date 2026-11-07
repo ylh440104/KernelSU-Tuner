@@ -121,6 +121,11 @@ custom presets, per-app parameters and a dry-run preview.
 The dry-run lists exactly which nodes a profile would change and from what
 to what, without writing anything.
 
+There is a language button in the top right corner. It switches the interface
+between Chinese and English and remembers the choice. The English interface is
+`webroot/index.en.html`; the manager still opens the Chinese `webroot/index.html`
+by default.
+
 ---
 
 ## Backup
