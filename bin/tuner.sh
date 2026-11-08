@@ -249,10 +249,10 @@ apply_cpu() {
   prof=$1
   case "$prof" in
     powersave) glist="powersave schedutil walt ondemand conservative interactive" ;;
-    balanced) glist="schedutil walt sugov_ext interactive ondemand conservative" ;;
+    balanced) glist="" ;;
     *) glist="performance walt schedutil interactive ondemand" ;;
   esac
-  if [ "$(cfg_get CPU_GOV)" = "1" ]; then
+  if [ "$(cfg_get CPU_GOV)" = "1" ] && [ -n "$glist" ]; then
     for d in $(cpu_dirs); do
       g=$(pick_gov "$d" "$glist")
       [ -n "$g" ] && wr "$d/scaling_governor" "$g"
@@ -296,6 +296,9 @@ apply_io() {
     esac
     for q in /sys/block/*/queue/scheduler; do
       [ -f "$q" ] || continue
+      case "$q" in
+        */block/loop*|*/block/dm-*|*/block/ram*|*/block/zram*|*/block/sr*) continue ;;
+      esac
       avail=$(cat "$q" 2>/dev/null)
       [ -n "$avail" ] || continue
       for s in $slist; do
@@ -314,9 +317,17 @@ apply_io() {
       gaming) ra=4096 ;;
     esac
     for r in /sys/block/*/queue/read_ahead_kb; do
+      [ -f "$r" ] || continue
+      case "$r" in
+        */block/loop*|*/block/dm-*|*/block/ram*|*/block/zram*|*/block/sr*) continue ;;
+      esac
       wr "$r" "$ra"
     done
     for r in /sys/block/*/queue/nr_requests; do
+      [ -f "$r" ] || continue
+      case "$r" in
+        */block/loop*|*/block/dm-*|*/block/ram*|*/block/zram*|*/block/sr*) continue ;;
+      esac
       case "$prof" in
         powersave) wr "$r" 64 ;;
         balanced) wr "$r" 128 ;;
