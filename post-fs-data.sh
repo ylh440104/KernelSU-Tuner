@@ -19,6 +19,7 @@ fi
 chmod 600 "$CFG_DIR/backup.conf" 2>/dev/null
 [ -f "$CFG_DIR/tuner.log" ] || : > "$CFG_DIR/tuner.log"
 chmod 600 "$CFG_DIR/tuner.log" 2>/dev/null
+rm -f "$CFG_DIR"/.applied.* 2>/dev/null
 
 if [ "$KSU_LATE_LOAD" = "1" ]; then
   printf 'late-load mode\n' >> "$CFG_DIR/tuner.log"

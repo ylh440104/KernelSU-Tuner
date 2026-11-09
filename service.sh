@@ -13,8 +13,14 @@ get() {
 
 profile=$(get PROFILE)
 [ -n "$profile" ] || profile=balanced
-
-sh "$MODDIR/bin/tuner.sh" apply "$profile"
+bootid=$(cat /proc/sys/kernel/random/boot_id 2>/dev/null)
+mark="$CFG_DIR/.applied.$bootid"
+if [ -n "$bootid" ] && [ -f "$mark" ]; then
+  :
+else
+  sh "$MODDIR/bin/tuner.sh" apply "$profile"
+  [ -n "$bootid" ] && : > "$mark" 2>/dev/null
+fi
 
 if [ "$(get AUTOPILOT)" = "1" ]; then
   sh "$MODDIR/bin/autopilot.sh" start >/dev/null 2>&1

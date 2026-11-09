@@ -50,7 +50,8 @@ run_loop() {
     wlog "开关未启用，不启动"
     return 0
   fi
-  last=""
+  last=$(get WATCH_BASE)
+  [ -n "$last" ] || last=$(get PROFILE)
   wlog "启动"
   while :; do
     if [ "$(get APPWATCH)" != "1" ]; then
