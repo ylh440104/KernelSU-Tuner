@@ -2,9 +2,17 @@
 
 版本号与 `module.prop` 中的 `version` 一致，括号内为 `versionCode`。
 
+## v3.5.8 (30058)
+
+应用策略关不掉，这才是卡顿的主因。
+
+- `initrc` 里的 `KernelSU-Tuner_watch` 直接调用 `appwatch.sh run`，绕过了 `start` 里的开关检查。所以即使 `APPWATCH=0`，前台应用轮询照跑不误。现在 `run_loop` 自己检查开关，关着就立刻退出。
+- 原来每 3 秒执行一次 `dumpsys activity activities`，这是 Android 最重的系统命令之一，会持有 ActivityManager 的锁。返回手势、启动微信、打开 WebUI 都要抢这把锁，所以全都慢一拍，而且是周期性发作。间隔改成 10 秒，并且先用轻量的 `dumpsys window`，取不到再退回。
+- 日志里能看到 `APPWATCH=0` 但仍有“默认 -> performance”的记录，就是这个原因。
+
 ## v3.5.7 (30057)
 
-IO 调度器把三星的 `ssg` 换成了 `none`，这是卡顿的主因。
+IO 调度器把三星的 `ssg` 换成了 `none`。
 
 - IO 调度器现在只替换老旧调度器（`cfq`、`deadline`）。厂商自带的 `ssg`、`none`、`mq-deadline`、`bfq`、`kyber` 一律不动。三星手机的默认是 `ssg`，之前被换成 `none`，所有磁盘读写都受影响，表现就是点什么都要慢一拍。
 - 每次应用到 IO 部分会先把调度器恢复成记录里的原值，再决定要不要改。所以装上新版并应用一次，被改坏的 `ssg` 会自动回来，不用手动回滚。

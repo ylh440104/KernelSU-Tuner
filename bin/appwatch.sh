@@ -32,13 +32,10 @@ wlog() {
 }
 
 fg_pkg() {
-  out=$(dumpsys activity activities 2>/dev/null | grep -m1 -E 'mResumedActivity|topResumedActivity')
-  p=$(printf '%s' "$out" | sed -n 's/.*[ {]\([A-Za-z0-9_.]*\)\/[A-Za-z0-9_.$]*.*/\1/p')
-  [ -n "$p" ] && { printf '%s' "$p"; return 0; }
   out=$(dumpsys window 2>/dev/null | grep -m1 -E 'mCurrentFocus|mFocusedApp')
   p=$(printf '%s' "$out" | sed -n 's/.*[ {]\([A-Za-z0-9_.]*\)\/[A-Za-z0-9_.$]*.*/\1/p')
   [ -n "$p" ] && { printf '%s' "$p"; return 0; }
-  out=$(dumpsys activity top 2>/dev/null | grep -m1 'ACTIVITY')
+  out=$(dumpsys activity activities 2>/dev/null | grep -m1 -E 'mResumedActivity|topResumedActivity')
   p=$(printf '%s' "$out" | sed -n 's/.*[ {]\([A-Za-z0-9_.]*\)\/[A-Za-z0-9_.$]*.*/\1/p')
   printf '%s' "$p"
 }
@@ -49,9 +46,17 @@ rule_of() {
 }
 
 run_loop() {
+  if [ "$(get APPWATCH)" != "1" ]; then
+    wlog "开关未启用，不启动"
+    return 0
+  fi
   last=""
   wlog "启动"
   while :; do
+    if [ "$(get APPWATCH)" != "1" ]; then
+      wlog "开关已关闭，退出"
+      break
+    fi
     base=$(get WATCH_BASE)
     [ -n "$base" ] || base=$(get PROFILE)
     [ -n "$base" ] || base=balanced
@@ -71,7 +76,7 @@ run_loop() {
         last="$target"
       fi
     fi
-    sleep 3
+    sleep 10
   done
 }
 
