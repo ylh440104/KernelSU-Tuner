@@ -247,10 +247,17 @@ freq_pick() {
 
 apply_cpu() {
   prof=$1
+  if [ "$(cfg_get CPU_GOV)" != "1" ]; then
+    restore_pattern "/sys/devices/system/cpu/cpufreq/*/scaling_governor"
+  fi
+  if [ "$(cfg_get CPU_FREQ)" != "1" ]; then
+    restore_pattern "/sys/devices/system/cpu/cpufreq/*/scaling_max_freq"
+    restore_pattern "/sys/devices/system/cpu/cpufreq/*/scaling_min_freq"
+  fi
   case "$prof" in
     powersave) glist="powersave schedutil walt ondemand conservative interactive" ;;
     balanced) glist="" ;;
-    *) glist="performance walt schedutil interactive ondemand" ;;
+    *) glist="walt performance schedutil interactive ondemand" ;;
   esac
   if [ "$(cfg_get CPU_GOV)" = "1" ] && [ -n "$glist" ]; then
     for d in $(cpu_dirs); do
@@ -286,35 +293,66 @@ apply_cpu() {
 }
 
 
+restore_pattern() {
+  [ -s "$BAK" ] || return 0
+  rp=$1
+  while IFS='|' read -r bp bv; do
+    [ -n "$bp" ] || continue
+    case "$bp" in
+      $rp) ;;
+      *) continue ;;
+    esac
+    case "$bp" in
+      */block/loop*|*/block/dm-*|*/block/ram*|*/block/zram*|*/block/sr*) continue ;;
+    esac
+    [ -f "$bp" ] || continue
+    cur=$(head -n 1 "$bp" 2>/dev/null | tr -d '\n\r')
+    [ "$cur" = "$bv" ] && continue
+    chmod 0644 "$bp" 2>/dev/null
+    ( printf '%s' "$bv" > "$bp" ) 2>/dev/null
+  done < "$BAK"
+}
+
 apply_io() {
   prof=$1
+  restore_pattern "/sys/block/*/queue/scheduler"
   if [ "$(cfg_get IO_SCHED)" = "1" ]; then
     case "$prof" in
-      powersave) slist="bfq mq-deadline kyber none deadline cfq" ;;
-      balanced) slist="mq-deadline kyber bfq none deadline cfq" ;;
-      *) slist="none mq-deadline kyber bfq deadline cfq" ;;
+      powersave) slist="bfq mq-deadline kyber" ;;
+      balanced) slist="mq-deadline kyber bfq" ;;
+      *) slist="mq-deadline kyber bfq" ;;
     esac
     for q in /sys/block/*/queue/scheduler; do
       [ -f "$q" ] || continue
       case "$q" in
         */block/loop*|*/block/dm-*|*/block/ram*|*/block/zram*|*/block/sr*) continue ;;
       esac
-      avail=$(cat "$q" 2>/dev/null)
-      [ -n "$avail" ] || continue
+      cur=$(cat "$q" 2>/dev/null)
+      [ -n "$cur" ] || continue
+      now=$(printf '%s' "$cur" | sed -n 's/.*\[\([^]]*\)\].*/\1/p')
+      case "$now" in
+        cfq|deadline) ;;
+        *) continue ;;
+      esac
+      plain=$(printf '%s' "$cur" | tr -d '[]')
       for s in $slist; do
-        case "$avail" in
-          *"[$s]"*) break ;;
-          *"$s"*) wr "$q" "$s"; break ;;
-        esac
+        hit=0
+        for a in $plain; do
+          [ "$a" = "$s" ] && hit=1
+        done
+        if [ "$hit" = "1" ]; then
+          wr "$q" "$s"
+          break
+        fi
       done
     done
   fi
   if [ "$(cfg_get READ_AHEAD)" = "1" ]; then
-    ra=2048
+    ra=512
     case "$prof" in
-      powersave) ra=512 ;;
-      balanced) ra=1024 ;;
-      gaming) ra=4096 ;;
+      powersave) ra=128 ;;
+      balanced) ra=256 ;;
+      gaming) ra=1024 ;;
     esac
     for r in /sys/block/*/queue/read_ahead_kb; do
       [ -f "$r" ] || continue
@@ -330,13 +368,15 @@ apply_io() {
       esac
       case "$prof" in
         powersave) wr "$r" 64 ;;
-        balanced) wr "$r" 128 ;;
-        *) wr "$r" 256 ;;
+        gaming) wr "$r" 256 ;;
+        *) wr "$r" 128 ;;
       esac
     done
+  else
+    restore_pattern "/sys/block/*/queue/read_ahead_kb"
+    restore_pattern "/sys/block/*/queue/nr_requests"
   fi
 }
-
 apply_gpu() {
   [ "$(cfg_get GPU_TUNE)" = "1" ] || return 0
   prof=$1
