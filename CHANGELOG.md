@@ -2,6 +2,15 @@
 
 版本号与 `module.prop` 中的 `version` 一致，括号内为 `versionCode`。
 
+## v3.6.0 (30060)
+
+WebUI 打开时的白屏。
+
+- `html` 元素之前没有背景色，只有 `body` 有。WebView 在 `body` 渲染出来之前显示的是根元素的默认白色，所以每次打开都会闪一下。现在 `html` 和 `body` 用同一个底色，并加了 `color-scheme: dark`。
+- 加了 `theme-color`，WebView 的加载背景也走深色。
+- 语言跳转原来写在 `body` 末尾的脚本里，如果之前切过英文，会先完整加载一遍中文页再跳转，白屏翻倍。现在放到 `head` 里并且用 `location.replace`，只加载一次，也不会多出一条历史记录。
+- 首次 `load()` 改成 `setTimeout(load, 0)`，让浏览器先把界面画出来，再去拉状态。
+
 ## v3.5.9 (30059)
 
 开机时会重复应用三四次。
